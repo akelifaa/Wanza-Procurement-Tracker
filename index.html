@@ -467,37 +467,91 @@ function parseRow(rawRow, cm) {
   return r;
 }
 
+// ── ADAPTIVE HEADER ROW FINDER ────────────────────────────────────────────────
+// Scans the first 7 rows and picks the one with the most recognizable column names.
+// This handles whatever row structure Google Sheets exports — no hardcoded row index.
+function findHeaderRowIndex(rows) {
+  const norm = s => (s||'').toLowerCase().replace(/[\n\r]+/g,' ').replace(/\s+/g,' ').trim();
+  // Strong signals that identify the real column header row
+  const SIGNALS = [
+    'item name','pr number','supplier name','settlement status',
+    'current stage','payment term','collection officer','evaluation officer',
+    'requesting department','procurement method','priority level',
+    'voucher number','3-way match','settlement date','delivery variance',
+  ];
+  let bestIdx = 2, bestScore = 0;
+  for(let i = 0; i < Math.min(7, rows.length); i++) {
+    const score = rows[i].filter(cell => {
+      const n = norm(cell);
+      return SIGNALS.some(sig => n.includes(sig));
+    }).length;
+    console.log(`Row ${i} header score: ${score}`, rows[i].slice(0,5));
+    if(score > bestScore) { bestScore = score; bestIdx = i; }
+  }
+  console.log(`Header row detected at index ${bestIdx} (score ${bestScore})`);
+  return bestIdx;
+}
+
 // ── DATA LOAD ─────────────────────────────────────────────────────────────────
 async function loadData() {
   document.getElementById('loading-state').style.display = 'flex';
   document.getElementById('dashboard').style.display    = 'none';
-  try {
-    const resp = await fetch(CSV_URL + '&t=' + Date.now());
-    if(!resp.ok) throw new Error('HTTP ' + resp.status);
-    const text = await resp.text();
-    const result = Papa.parse(text, { header:false, skipEmptyLines:true });
-    const rows = result.data;
-    // rows[0]=title row, rows[1]=group headers, rows[2]=column headers, rows[3+]=data
-    const headerRow = rows[2] || [];
-    colMap = buildColMap(headerRow);
 
-    if(!('item' in colMap) && !('pr_no' in colMap)) {
-      throw new Error('Could not detect column headers. Check that the sheet name is exactly "PROCUREMENT_LOG".');
+  // Two URL formats — gviz (preferred) and export fallback
+  const URLS = [
+    `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(SHEET_NAME)}&t=${Date.now()}`,
+    `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&t=${Date.now()}`,
+  ];
+
+  let text = null;
+  let lastErr = '';
+  for(const url of URLS) {
+    try {
+      const resp = await fetch(url);
+      if(resp.ok) { text = await resp.text(); break; }
+      lastErr = 'HTTP ' + resp.status;
+    } catch(e) { lastErr = e.message; }
+  }
+  if(!text) {
+    document.getElementById('loading-state').innerHTML =
+      `<div class="error-box">⚠️ Could not reach Google Sheet: ${lastErr}<br>
+      <small>Make sure the sheet is shared as "Anyone with the link can view".</small></div>`;
+    return;
+  }
+
+  try {
+    const result = Papa.parse(text, { header:false, skipEmptyLines:true });
+    const rows   = result.data;
+    console.log('CSV rows received:', rows.length, '| First row:', rows[0]?.slice(0,4));
+
+    // Adaptively find which row is the real column header row
+    const hdrIdx = findHeaderRowIndex(rows);
+    const headerRow = rows[hdrIdx] || [];
+    colMap = buildColMap(headerRow);
+    console.log('Fields detected:', Object.keys(colMap).length, colMap);
+
+    // Validate we found enough fields
+    const foundCount = Object.keys(colMap).length;
+    if(foundCount < 5) {
+      // Debug: show what rows look like
+      const preview = rows.slice(0,4).map((r,i)=>`Row${i}: ${r.slice(0,6).join(' | ')}`).join('\n');
+      throw new Error(`Only detected ${foundCount} columns (need ≥5). CSV structure:\n${preview}`);
     }
 
+    // Data starts one row after the header row
     const prIdx   = colMap['pr_no'];
     const itemIdx = colMap['item'];
-    rawData = rows.slice(3)
+    rawData = rows.slice(hdrIdx + 1)
       .filter(r => {
         const pr   = prIdx   !== undefined ? clean(r[prIdx])   : null;
         const item = itemIdx !== undefined ? clean(r[itemIdx]) : null;
-        if(pr && (pr.toLowerCase().includes('pr number') || pr.toLowerCase().includes('pr no'))) return false;
-        if(item && item.toLowerCase().includes('item name')) return false;
+        if(pr   && /^(pr num|pr no)/i.test(pr.trim()))   return false;
+        if(item && /^item name/i.test(item.trim()))       return false;
         return !!(pr || item);
       })
       .map(r => parseRow(r, colMap));
 
-    console.log('Loaded', rawData.length, 'rows');
+    console.log('Parsed rows:', rawData.length);
     populateFilters();
     applyFilters();
     document.getElementById('loading-state').style.display = 'none';
@@ -506,8 +560,8 @@ async function loadData() {
       'Updated ' + new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
   } catch(e) {
     document.getElementById('loading-state').innerHTML =
-      `<div class="error-box">⚠️ Failed to load: ${e.message}<br>
-      <small>Ensure the Google Sheet is shared as "Anyone with the link can view" and sheet name is exactly PROCUREMENT_LOG</small></div>`;
+      `<div class="error-box">⚠️ Failed to parse data: ${e.message}<br>
+      <small>Open browser console (F12) for details. Check sheet name is PROCUREMENT_LOG.</small></div>`;
     console.error(e);
   }
 }
