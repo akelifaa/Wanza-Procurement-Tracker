@@ -2,166 +2,270 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Wanza Procurement | MIDROC</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"><\/script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"><\/script>
-<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"><\/script>
+<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
 <style>
-:root{--mg:#386A59;--moss:#719A58;--camel:#C2984D;--hem:#675633;--lt-mg:#E8F0EA;--lt-cam:#F5ECD9;--cream:#FAF8F3;--dk:#1F2A26;--mt:#5E6B64;--red:#C0392B;--amber:#D68910;--white:#fff;--border:#D4DDD5;--shadow:0 1px 4px rgba(0,0,0,.07)}
+:root {
+  --mg:       #386A59;
+  --moss:     #719A58;
+  --camel:    #C2984D;
+  --hemlock:  #675633;
+  --lt-green: #E8F0EA;
+  --lt-camel: #F5ECD9;
+  --cream:    #FAF8F3;
+  --dk:       #1F2A26;
+  --mt:       #5E6B64;
+  --red:      #C0392B;
+  --amber:    #D68910;
+  --white:    #FFFFFF;
+  --border:   #D4DDD5;
+  --sidebar-w:220px;
+}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;font-family:"Montserrat",sans-serif;background:var(--cream);color:var(--dk);font-size:13px}
-::-webkit-scrollbar{width:5px;height:5px}
+html,body{height:100%;font-family:'Montserrat',sans-serif;background:var(--cream);color:var(--dk);font-size:13px}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:#EEF2EE}
 ::-webkit-scrollbar-thumb{background:var(--moss);border-radius:3px}
+
+/* LAYOUT */
 .shell{display:flex;height:100vh;overflow:hidden}
-.sidebar{width:210px;min-width:210px;background:var(--dk);display:flex;flex-direction:column;overflow-y:auto;z-index:20;flex-shrink:0}
-.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
-.topbar{background:linear-gradient(135deg,var(--mg),var(--hem));padding:12px 22px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
-.topbar-title{color:#fff;font-size:15px;font-weight:800;letter-spacing:.3px}
-.topbar-sub{color:rgba(255,255,255,.6);font-size:10px;margin-top:2px;letter-spacing:.5px}
+.sidebar{width:var(--sidebar-w);min-width:var(--sidebar-w);background:var(--dk);display:flex;flex-direction:column;padding:0;overflow-y:auto;z-index:10;flex-shrink:0}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.topbar{background:linear-gradient(135deg,var(--mg) 0%,var(--hemlock) 100%);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.topbar-title{color:#fff;font-size:16px;font-weight:800;letter-spacing:.3px}
+.topbar-sub{color:rgba(255,255,255,.6);font-size:10px;font-weight:500;margin-top:2px;letter-spacing:.5px}
 .topbar-right{display:flex;align-items:center;gap:10px}
-.btn-sm{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;padding:5px 12px;border-radius:20px;cursor:pointer;font-family:"Montserrat",sans-serif;font-size:11px;font-weight:600;transition:all .2s;white-space:nowrap}
-.btn-sm:hover{background:rgba(255,255,255,.28)}
-.btn-sm.g{background:var(--moss);border-color:var(--moss)}
-.last-ref{color:rgba(255,255,255,.45);font-size:10px}
-.tab-bar{display:flex;gap:1px;padding:0 22px;background:#fff;border-bottom:2px solid var(--border);flex-shrink:0;overflow-x:auto}
-.tab-btn{padding:10px 14px;background:none;border:none;cursor:pointer;font-family:"Montserrat",sans-serif;font-size:11px;font-weight:600;color:var(--mt);white-space:nowrap;border-bottom:3px solid transparent;margin-bottom:-2px;transition:color .15s}
+.topbar-btn{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;padding:5px 12px;border-radius:20px;cursor:pointer;font-family:'Montserrat',sans-serif;font-size:11px;font-weight:600;transition:all .2s;white-space:nowrap}
+.topbar-btn:hover{background:rgba(255,255,255,.28)}
+.topbar-btn.green{background:var(--moss);border-color:var(--moss)}
+.last-refresh{color:rgba(255,255,255,.5);font-size:10px}
+.content{flex:1;overflow-y:auto;padding:20px 24px}
+
+/* SIDEBAR */
+.sb-brand{padding:20px 18px 14px;border-bottom:1px solid rgba(255,255,255,.08)}
+.sb-logo{font-size:20px;margin-bottom:4px}
+.sb-name{color:#fff;font-size:13px;font-weight:700}
+.sb-sub{color:rgba(255,255,255,.4);font-size:10px;font-weight:500;margin-top:1px}
+.sb-section{padding:14px 18px 6px;color:rgba(255,255,255,.35);font-size:9px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase}
+.sb-filter{padding:4px 18px 10px}
+.sb-filter label{color:rgba(255,255,255,.5);font-size:10px;font-weight:600;letter-spacing:.5px;display:block;margin-bottom:4px}
+.sb-filter select{width:100%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);color:#fff;padding:6px 10px;border-radius:6px;font-family:'Montserrat',sans-serif;font-size:11px;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='rgba(255,255,255,.4)'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:28px}
+.sb-filter select option{background:#2A3F38;color:#fff}
+.sb-filter select:focus{outline:none;border-color:var(--moss)}
+.clear-filters-btn{display:none;width:100%;background:rgba(192,57,43,.2);border:1px solid rgba(192,57,43,.4);color:#FF9E9E;padding:6px;border-radius:6px;cursor:pointer;font-size:10px;font-weight:600;font-family:'Montserrat',sans-serif;margin-top:4px}
+.clear-filters-btn.visible{display:block}
+.sb-stats{padding:12px 18px;margin-top:auto;border-top:1px solid rgba(255,255,255,.08)}
+.sb-stat{display:flex;justify-content:space-between;padding:3px 0;font-size:10px}
+.sb-stat span{color:rgba(255,255,255,.4)}
+.sb-stat strong{color:#fff;font-weight:600}
+
+/* TABS */
+.tabs-row{display:flex;gap:2px;padding:0 24px;background:#fff;border-bottom:2px solid var(--border);flex-shrink:0;overflow-x:auto}
+.tab-btn{padding:11px 16px;background:none;border:none;cursor:pointer;font-family:'Montserrat',sans-serif;font-size:11px;font-weight:600;color:var(--mt);position:relative;white-space:nowrap;transition:color .2s;border-bottom:3px solid transparent;margin-bottom:-2px}
 .tab-btn:hover{color:var(--mg)}
 .tab-btn.active{color:var(--mg);border-bottom-color:var(--mg)}
-.content{flex:1;overflow-y:auto;padding:16px 22px 40px}
 .tab-panel{display:none}
 .tab-panel.active{display:block}
-.sb-brand{padding:18px 16px 12px;border-bottom:1px solid rgba(255,255,255,.08)}
-.sb-logo{font-size:22px;margin-bottom:3px}
-.sb-name{color:#fff;font-size:13px;font-weight:700}
-.sb-sub{color:rgba(255,255,255,.38);font-size:10px;margin-top:1px}
-.sb-sec{padding:12px 16px 4px;color:rgba(255,255,255,.3);font-size:9px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase}
-.sb-filter{padding:3px 16px 9px}
-.sb-filter label{color:rgba(255,255,255,.45);font-size:10px;font-weight:600;letter-spacing:.4px;display:block;margin-bottom:4px}
-.sb-filter select{width:100%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);color:#fff;padding:6px 28px 6px 9px;border-radius:6px;font-family:"Montserrat",sans-serif;font-size:11px;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='rgba(255,255,255,.35)'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 9px center}
-.sb-filter select option{background:#2A3F38}
-.sb-info{margin-top:auto;padding:12px 16px;border-top:1px solid rgba(255,255,255,.08)}
-.sb-stat{display:flex;justify-content:space-between;padding:3px 0;font-size:10px}
-.sb-stat span{color:rgba(255,255,255,.35)}
-.sb-stat strong{color:#fff;font-weight:600}
-.clr-btn{width:100%;margin-top:8px;background:rgba(192,57,43,.25);border:1px solid rgba(192,57,43,.4);color:#ff9e9e;padding:5px;border-radius:5px;cursor:pointer;font-size:10px;font-weight:600;font-family:"Montserrat",sans-serif;display:none}
-.clr-btn.show{display:block}
-.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px}
-.kpi-card{background:#fff;border-radius:8px;padding:14px 16px;border-left:4px solid var(--mg);box-shadow:var(--shadow);cursor:pointer;transition:transform .15s,box-shadow .15s;position:relative}
-.kpi-card::after{content:"▶";position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:10px;color:var(--border);transition:color .15s}
-.kpi-card:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,.12)}
+
+/* KPI CARDS */
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:16px}
+.kpi-card{background:#fff;border-radius:8px;padding:14px 16px;border-left:4px solid var(--mg);box-shadow:0 1px 3px rgba(0,0,0,.06);cursor:pointer;transition:transform .15s,box-shadow .15s;position:relative;overflow:hidden}
+.kpi-card::after{content:'▶';position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:9px;color:var(--border);transition:color .2s}
+.kpi-card:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,.1)}
 .kpi-card:hover::after{color:var(--mg)}
 .kpi-card.amber{border-left-color:var(--camel)}
+.kpi-card.amber::after:hover{color:var(--camel)}
 .kpi-card.red{border-left-color:var(--red)}
 .kpi-card.moss{border-left-color:var(--moss)}
-.kpi-card.hem{border-left-color:var(--hem)}
-.kpi-card.af{box-shadow:0 0 0 2px var(--mg),0 4px 12px rgba(56,106,89,.2)!important}
-.kpi-card.amber.af{box-shadow:0 0 0 2px var(--camel),0 4px 12px rgba(194,152,77,.2)!important}
-.kpi-card.red.af{box-shadow:0 0 0 2px var(--red),0 4px 12px rgba(192,57,43,.2)!important}
-.kpi-label{font-size:9px;font-weight:700;color:var(--mt);text-transform:uppercase;letter-spacing:.9px;margin-bottom:5px}
-.kpi-value{font-size:26px;font-weight:800;color:var(--dk);line-height:1;font-family:"JetBrains Mono",monospace}
+.kpi-card.hem{border-left-color:var(--hemlock)}
+.kpi-card.active-kpi{box-shadow:0 0 0 2px var(--mg),0 4px 12px rgba(56,106,89,.18)!important}
+.kpi-card.amber.active-kpi{box-shadow:0 0 0 2px var(--camel),0 4px 12px rgba(194,152,77,.18)!important}
+.kpi-card.red.active-kpi{box-shadow:0 0 0 2px var(--red),0 4px 12px rgba(192,57,43,.18)!important}
+.kpi-card.hem.active-kpi{box-shadow:0 0 0 2px var(--hemlock),0 4px 12px rgba(103,86,51,.18)!important}
+.kpi-label{font-size:9px;font-weight:700;color:var(--mt);text-transform:uppercase;letter-spacing:.9px;margin-bottom:6px}
+.kpi-value{font-size:26px;font-weight:800;color:var(--dk);line-height:1;font-family:'JetBrains Mono',monospace}
 .kpi-sub{font-size:10px;color:var(--mt);margin-top:4px}
-.sec{font-size:10px;font-weight:700;color:var(--mg);text-transform:uppercase;letter-spacing:1.2px;border-bottom:2px solid var(--mg);padding-bottom:5px;margin:20px 0 13px;display:flex;align-items:center;justify-content:space-between}
+
+/* SECTION HEADERS */
+.sec{font-size:10px;font-weight:700;color:var(--mg);text-transform:uppercase;letter-spacing:1.2px;border-bottom:2px solid var(--mg);padding-bottom:5px;margin:22px 0 14px;display:flex;align-items:center;justify-content:space-between}
 .sec:first-child{margin-top:0}
-.sec-n{font-size:11px;font-weight:600;color:var(--mt);text-transform:none;letter-spacing:0}
-.pipeline{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-bottom:16px}
-.pipe-stage{background:#fff;border-radius:8px;padding:12px;border-top:4px solid var(--border);box-shadow:var(--shadow);text-align:center;cursor:pointer;transition:transform .15s}
-.pipe-stage:hover,.pipe-stage.af{transform:translateY(-1px);box-shadow:0 0 0 2px var(--mg),0 2px 8px rgba(0,0,0,.1)}
-.pipe-count{font-size:24px;font-weight:800;line-height:1;margin-bottom:3px;font-family:"JetBrains Mono",monospace}
-.pipe-label{font-size:9px;font-weight:700;color:var(--mt);text-transform:uppercase;letter-spacing:.6px}
-.pipe-pct{font-size:10px;color:var(--mt);margin-top:2px}
-.chart-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:14px}
-.chart-grid.single{grid-template-columns:1fr}
-.chart-card{background:#fff;border-radius:8px;padding:15px;box-shadow:var(--shadow)}
+.sec-count{font-size:11px;color:var(--mt);font-weight:500;text-transform:none;letter-spacing:0}
+
+/* CHARTS */
+.chart-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-bottom:16px}
+.chart-card{background:#fff;border-radius:8px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
 .chart-card.wide{grid-column:1/-1}
-.chart-title{font-size:11px;font-weight:700;color:var(--dk);margin-bottom:11px;display:flex;align-items:center;justify-content:space-between}
-.chart-title small{font-size:9px;color:var(--mt);font-weight:500}
-.chart-note{font-size:9px;color:var(--mt);margin-top:6px;font-style:italic}
-.tbl-wrap{background:#fff;border-radius:8px;overflow:hidden;box-shadow:var(--shadow);margin-bottom:14px}
-.tbl-head{padding:10px 14px;font-size:11px;font-weight:700;color:var(--dk);border-bottom:1px solid var(--border);background:var(--lt-mg);display:flex;align-items:center;justify-content:space-between}
-.tbl-scroll{overflow-x:auto;max-height:380px;overflow-y:auto}
+.chart-title{font-size:11px;font-weight:700;color:var(--dk);margin-bottom:12px;letter-spacing:.2px;display:flex;justify-content:space-between;align-items:center}
+.chart-title small{font-size:9px;color:var(--mt);font-weight:400}
+.chart-wrap{position:relative}
+
+/* PIPELINE */
+.pipeline{display:flex;gap:8px;margin-bottom:20px}
+.pipe-stage{flex:1;background:#fff;border-radius:8px;padding:12px 14px;border-top:4px solid var(--border);box-shadow:0 1px 3px rgba(0,0,0,.06);text-align:center;cursor:pointer;transition:transform .15s,box-shadow .15s}
+.pipe-stage:hover,.pipe-stage.active-stage{transform:translateY(-1px);box-shadow:0 0 0 2px var(--mg),0 3px 8px rgba(0,0,0,.08)}
+.pipe-count{font-size:24px;font-weight:800;color:var(--dk);line-height:1;margin-bottom:4px;font-family:'JetBrains Mono',monospace}
+.pipe-label{font-size:9px;font-weight:600;color:var(--mt);text-transform:uppercase;letter-spacing:.7px}
+.pipe-pct{font-size:11px;color:var(--mt);margin-top:3px}
+
+/* TABLES */
+.tbl-wrap{background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.06);margin-bottom:16px}
+.tbl-head{padding:12px 16px;font-size:11px;font-weight:700;color:var(--dk);border-bottom:1px solid var(--border);background:var(--lt-green);display:flex;justify-content:space-between;align-items:center}
+.tbl-scroll{overflow-x:auto;max-height:400px;overflow-y:auto}
 table{width:100%;border-collapse:collapse}
-th{background:#F0F5F1;padding:7px 11px;text-align:left;font-size:9px;font-weight:700;color:var(--mt);text-transform:uppercase;letter-spacing:.7px;border-bottom:1px solid var(--border);white-space:nowrap;position:sticky;top:0;z-index:1}
-td{padding:7px 11px;border-bottom:1px solid #F0F5F1;font-size:11px;vertical-align:middle;color:var(--dk)}
-tr:hover td{background:#F8FBF8}
+th{background:#F0F5F1;padding:8px 12px;text-align:left;font-size:9px;font-weight:700;color:var(--mt);text-transform:uppercase;letter-spacing:.8px;border-bottom:1px solid var(--border);white-space:nowrap;position:sticky;top:0;z-index:1}
+td{padding:8px 12px;border-bottom:1px solid var(--border);font-size:11px;vertical-align:middle;color:var(--dk)}
 tr:last-child td{border-bottom:none}
+tr:hover td{background:#F8FBF8}
 .badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700}
 .badge.pass{background:#D5F0E0;color:#1A6640}
 .badge.fail{background:#FDDEDE;color:#922B2B}
-.badge.pend{background:var(--lt-cam);color:var(--hem)}
-.badge.sett{background:var(--lt-mg);color:var(--mg)}
-.badge.urg{background:#FDDEDE;color:#922B2B}
-.badge.std{background:var(--lt-mg);color:var(--mg)}
-.varpos{color:var(--moss);font-weight:600;font-family:"JetBrains Mono",monospace;font-size:10px}
-.varneg{color:var(--red);font-weight:600;font-family:"JetBrains Mono",monospace;font-size:10px}
-.varnil{color:var(--mt);font-size:10px}
-.empty-s{padding:32px;text-align:center;color:var(--mt);font-size:12px}
-.empty-s .ico{font-size:28px;margin-bottom:8px}
-.modal-ov{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;display:none;align-items:flex-start;justify-content:center;padding:40px 20px;overflow-y:auto}
-.modal-ov.open{display:flex}
-.modal{background:#fff;border-radius:10px;width:100%;max-width:1100px;box-shadow:0 20px 60px rgba(0,0,0,.25);animation:slideUp .2s ease}
-@keyframes slideUp{from{transform:translateY(16px);opacity:0}to{transform:translateY(0);opacity:1}}
-.modal-hdr{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--lt-mg);border-radius:10px 10px 0 0}
+.badge.pending{background:var(--lt-camel);color:var(--hemlock)}
+.badge.settled{background:var(--lt-green);color:var(--mg)}
+.badge.urgent{background:#FDDEDE;color:#922B2B}
+.badge.std{background:var(--lt-green);color:var(--mg)}
+.badge.disputed{background:#FEF9EC;color:var(--amber)}
+.var-pos{color:var(--moss);font-weight:600;font-family:'JetBrains Mono',monospace;font-size:11px}
+.var-neg{color:var(--red);font-weight:600;font-family:'JetBrains Mono',monospace;font-size:11px}
+.var-nil{color:var(--mt);font-size:11px}
+.empty-state{padding:32px;text-align:center;color:var(--mt);font-size:12px}
+.empty-state .icon{font-size:28px;margin-bottom:8px}
+
+/* FILTER STRIP */
+.filter-strip{background:var(--lt-camel);border:1px solid var(--camel);border-radius:6px;padding:8px 14px;margin-bottom:14px;font-size:11px;color:var(--hemlock);display:none;justify-content:space-between;align-items:center;gap:10px}
+.filter-strip.visible{display:flex}
+.filter-strip strong{color:var(--hemlock)}
+.filter-strip button{background:none;border:none;color:var(--red);cursor:pointer;font-weight:700;font-size:13px;padding:0 4px}
+
+/* STAGE MISMATCH NOTICE */
+.stage-notice{background:var(--lt-camel);border:1px solid var(--camel);border-left:4px solid var(--camel);border-radius:6px;padding:10px 14px;margin-bottom:14px;font-size:11px;color:var(--hemlock);line-height:1.6}
+.stage-notice code{background:rgba(103,86,51,.1);padding:1px 5px;border-radius:3px;font-family:'JetBrains Mono',monospace;font-size:10px;word-break:break-all}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;display:none;align-items:flex-start;justify-content:center;padding:40px 20px;overflow-y:auto}
+.modal-overlay.open{display:flex}
+.modal{background:#fff;border-radius:10px;width:100%;max-width:1100px;box-shadow:0 20px 60px rgba(0,0,0,.3);animation:slideUp .2s ease}
+@keyframes slideUp{from{transform:translateY(14px);opacity:0}to{transform:translateY(0);opacity:1}}
+.modal-header{padding:14px 20px;border-bottom:1px solid var(--border);background:var(--lt-green);border-radius:10px 10px 0 0;display:flex;align-items:center;justify-content:space-between}
 .modal-title{font-size:13px;font-weight:700;color:var(--dk)}
-.modal-close{background:none;border:none;font-size:18px;cursor:pointer;color:var(--mt);padding:2px 6px;border-radius:4px}
-.modal-body{padding:16px 20px;max-height:70vh;overflow-y:auto}
-.modal-foot{padding:12px 20px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end}
-.btn-x{background:var(--mg);color:#fff;border:none;padding:7px 16px;border-radius:6px;cursor:pointer;font-size:11px;font-weight:600;font-family:"Montserrat",sans-serif}
-.btn-x.s{background:var(--moss)}
+.modal-title span{font-size:11px;color:var(--mt);font-weight:400;margin-left:8px}
+.modal-close{background:none;border:none;font-size:18px;cursor:pointer;color:var(--mt);padding:2px 7px;border-radius:4px;transition:background .15s}
+.modal-close:hover{background:var(--border)}
+.modal-body{padding:16px 20px;max-height:68vh;overflow-y:auto}
+.modal-footer{padding:12px 20px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end}
+.btn-primary{background:var(--mg);color:#fff;border:none;padding:7px 16px;border-radius:6px;cursor:pointer;font-size:11px;font-weight:600;font-family:'Montserrat',sans-serif;transition:opacity .15s}
+.btn-primary:hover{opacity:.85}
+.btn-secondary{background:var(--moss);color:#fff;border:none;padding:7px 16px;border-radius:6px;cursor:pointer;font-size:11px;font-weight:600;font-family:'Montserrat',sans-serif;transition:opacity .15s}
+.btn-secondary:hover{opacity:.85}
+
+/* LOADING / ERROR */
 .loading{display:flex;align-items:center;justify-content:center;height:60vh;flex-direction:column;gap:12px}
-.spinner{width:36px;height:36px;border:3px solid var(--lt-mg);border-top-color:var(--mg);border-radius:50%;animation:spin .7s linear infinite}
+.spinner{width:36px;height:36px;border:3px solid var(--lt-green);border-top-color:var(--mg);border-radius:50%;animation:spin .7s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-.loading-txt{color:var(--mt);font-size:12px;font-weight:600}
-.err-box{background:#FFF5F5;border:1px solid #FBBDBD;border-radius:8px;padding:16px 20px;font-size:12px;color:var(--red)}
-.notice{background:var(--lt-cam);border:1px solid var(--camel);border-radius:6px;padding:10px 14px;font-size:11px;color:var(--hem);margin-bottom:14px;line-height:1.6}
-.filter-strip{background:var(--lt-cam);border:1px solid var(--camel);border-radius:6px;padding:8px 14px;font-size:11px;color:var(--hem);margin-bottom:14px;display:flex;justify-content:space-between;align-items:center}
-.filter-strip button{background:none;border:none;color:var(--red);cursor:pointer;font-weight:700;font-size:12px}
-@media print{.sidebar,.tab-bar,.topbar-right,.modal-ov{display:none!important}.shell{display:block;height:auto}.main{display:block}.content{padding:0;overflow:visible}.tab-panel{display:block!important}}
+.loading-text{color:var(--mt);font-size:12px;font-weight:600}
+.error-box{background:#FFF5F5;border:1px solid #FBBDBD;border-radius:8px;padding:16px 20px;margin:20px 0;font-size:12px;color:var(--red)}
+
+/* PRINT */
+@media print{
+  .sidebar,.topbar-right,.tabs-row,.modal-overlay{display:none!important}
+  .shell{display:block;height:auto}
+  .main{display:block}
+  .content{padding:0;overflow:visible}
+  .tab-panel{display:block!important}
+  .kpi-card{break-inside:avoid}
+}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+  .sidebar{width:180px;min-width:180px}
+  .kpi-row{grid-template-columns:repeat(2,1fr)}
+  .chart-grid{grid-template-columns:1fr}
+  .pipeline{flex-wrap:wrap}
+  .pipe-stage{min-width:calc(50% - 4px)}
+}
 </style>
 </head>
 <body>
 <div class="shell">
+
+<!-- SIDEBAR -->
 <aside class="sidebar">
-  <div class="sb-brand"><div class="sb-logo">&#127981;</div><div class="sb-name">Wanza Furniture PLC</div><div class="sb-sub">MIDROC Investment Group</div></div>
-  <div class="sb-sec">Filters</div>
-  <div class="sb-filter"><label>Stage</label><select id="f-stage" onchange="applyFilters()"><option value="">All Stages</option><option>Collection Stage</option><option>Evaluation Stage</option><option>GM / Payment Approval</option><option>Delivery Stage</option><option>Settlement Stage</option><option>Completed</option></select></div>
+  <div class="sb-brand">
+    <div class="sb-logo">🏭</div>
+    <div class="sb-name">Wanza Furniture PLC</div>
+    <div class="sb-sub">MIDROC Investment Group</div>
+  </div>
+  <div class="sb-section">Filters</div>
+  <div class="sb-filter">
+    <label>Stage</label>
+    <select id="f-stage" onchange="applyFilters()">
+      <option value="">All Stages</option>
+      <option>Collection Stage</option><option>Evaluation Stage</option>
+      <option>GM / Payment Approval</option><option>Delivery Stage</option>
+      <option>Settlement Stage</option><option>Completed</option>
+    </select>
+  </div>
   <div class="sb-filter"><label>Department</label><select id="f-dept" onchange="applyFilters()"></select></div>
   <div class="sb-filter"><label>Officer</label><select id="f-officer" onchange="applyFilters()"></select></div>
-  <div class="sb-filter"><label>Priority</label><select id="f-priority" onchange="applyFilters()"><option value="">All</option><option>URGENT</option><option>STANDARD</option></select></div>
+  <div class="sb-filter">
+    <label>Priority</label>
+    <select id="f-priority" onchange="applyFilters()">
+      <option value="">All</option><option>URGENT</option><option>STANDARD</option>
+    </select>
+  </div>
   <div class="sb-filter"><label>Procurement Method</label><select id="f-method" onchange="applyFilters()"></select></div>
-  <div class="sb-filter"><label>Settlement Status</label><select id="f-sett" onchange="applyFilters()"><option value="">All</option><option>Settled</option><option>Pending</option><option>Disputed</option></select></div>
-  <div class="sb-filter"><button class="clr-btn" id="clr-btn" onclick="clearFilters()">&#10005; Clear All Filters</button></div>
-  <div class="sb-info">
-    <div class="sb-stat"><span>Total Items</span><strong id="s-tot">&#8212;</strong></div>
-    <div class="sb-stat"><span>Showing</span><strong id="s-sho">&#8212;</strong></div>
-    <div class="sb-stat"><span>Urgent Open</span><strong id="s-urg">&#8212;</strong></div>
-    <div class="sb-stat"><span>Delayed</span><strong id="s-del">&#8212;</strong></div>
-    <div class="sb-stat"><span>Total Spend</span><strong id="s-spd">&#8212;</strong></div>
+  <div class="sb-filter">
+    <label>Settlement Status</label>
+    <select id="f-sett" onchange="applyFilters()">
+      <option value="">All</option><option>Settled</option><option>Pending</option><option>Disputed</option>
+    </select>
+  </div>
+  <div class="sb-filter">
+    <button class="clear-filters-btn" id="clear-btn" onclick="clearAllFilters()">✕ Clear All Filters</button>
+  </div>
+  <div class="sb-stats">
+    <div class="sb-stat"><span>Total Items</span><strong id="stat-total">—</strong></div>
+    <div class="sb-stat"><span>Showing</span><strong id="stat-showing">—</strong></div>
+    <div class="sb-stat"><span>Urgent Open</span><strong id="stat-urgent">—</strong></div>
+    <div class="sb-stat"><span>Delayed</span><strong id="stat-delayed">—</strong></div>
+    <div class="sb-stat"><span>Total Spend</span><strong id="stat-spend">—</strong></div>
   </div>
 </aside>
+
+<!-- MAIN -->
 <div class="main">
   <div class="topbar">
-    <div><div class="topbar-title">Procurement Command Dashboard</div><div class="topbar-sub">WANZA FURNITURE PLC &#8212; MANUFACTURING CLUSTER PMO &#8212; LIVE DATA</div></div>
+    <div>
+      <div class="topbar-title">Procurement Command Dashboard</div>
+      <div class="topbar-sub">WANZA FURNITURE PLC — MANUFACTURING CLUSTER PMO — LIVE DATA</div>
+    </div>
     <div class="topbar-right">
-      <span class="last-ref" id="last-ref">Loading&#8230;</span>
-      <button class="btn-sm" onclick="reloadData()">&#8635; Refresh</button>
-      <button class="btn-sm g" onclick="exportCSV()">&#8595; Export CSV</button>
-      <button class="btn-sm" onclick="window.print()">&#128424; Print</button>
+      <span class="last-refresh" id="last-refresh">Loading…</span>
+      <button class="topbar-btn" onclick="reloadData()">↻ Refresh</button>
+      <button class="topbar-btn green" onclick="exportCSV()">⬇ Export CSV</button>
+      <button class="topbar-btn" onclick="window.print()">🖨 Print</button>
     </div>
   </div>
-  <div class="tab-bar">
-    <button class="tab-btn active" onclick="switchTab('exec',this)">&#128202; Summary</button>
-    <button class="tab-btn" onclick="switchTab('ops',this)">&#9881;&#65039; Operations</button>
-    <button class="tab-btn" onclick="switchTab('people',this)">&#128100; People</button>
-    <button class="tab-btn" onclick="switchTab('suppliers',this)">&#127981; Suppliers</button>
-    <button class="tab-btn" onclick="switchTab('cycle',this)">&#128200; Cycle Time</button>
-    <button class="tab-btn" onclick="switchTab('finance',this)">&#128176; Financial</button>
-    <button class="tab-btn" onclick="switchTab('audit',this)">&#9989; Settlement</button>
+
+  <div class="tabs-row">
+    <button class="tab-btn active" onclick="switchTab('exec',this)">📊 Summary</button>
+    <button class="tab-btn" onclick="switchTab('ops',this)">⚙️ Operations</button>
+    <button class="tab-btn" onclick="switchTab('people',this)">👤 People</button>
+    <button class="tab-btn" onclick="switchTab('suppliers',this)">🏭 Suppliers</button>
+    <button class="tab-btn" onclick="switchTab('cycle',this)">📈 Cycle Time</button>
+    <button class="tab-btn" onclick="switchTab('finance',this)">💰 Financial</button>
+    <button class="tab-btn" onclick="switchTab('audit',this)">✅ Settlement Audit</button>
   </div>
+
   <div class="content" id="content">
-    <div class="loading" id="loading-state"><div class="spinner"></div><div class="loading-txt">Loading from Google Sheets&#8230;</div></div>
+    <div class="loading" id="loading-state">
+      <div class="spinner"></div>
+      <div class="loading-text">Loading procurement data from Google Sheets…</div>
+    </div>
     <div id="dashboard" style="display:none">
       <div id="tab-exec"      class="tab-panel active"></div>
       <div id="tab-ops"       class="tab-panel"></div>
@@ -174,470 +278,1073 @@ tr:last-child td{border-bottom:none}
   </div>
 </div>
 </div>
-<div class="modal-ov" id="modal-ov" onclick="if(event.target===this)closeModal()">
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal-overlay" onclick="if(event.target===this)closeModal()">
   <div class="modal">
-    <div class="modal-hdr"><div class="modal-title" id="modal-title">Details</div><button class="modal-close" onclick="closeModal()">&#10005;</button></div>
+    <div class="modal-header">
+      <div class="modal-title" id="modal-title">Details</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
     <div class="modal-body" id="modal-body"></div>
-    <div class="modal-foot"><button class="btn-x s" onclick="exportModalCSV()">&#8595; Export CSV</button><button class="btn-x" onclick="closeModal()">Close</button></div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="exportModalCSV()">⬇ Export CSV</button>
+      <button class="btn-primary" onclick="closeModal()">Close</button>
+    </div>
   </div>
 </div>
+
 <script>
 Chart.register(ChartDataLabels);
-const SHEET_ID="1JfT1mOPH3d9H3V4meUSqxw7EWagQNEas";
-const SHEET_NAME="PROCUREMENT_LOG";
-const CSV_URL=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${SHEET_NAME}`;
-const STAGES=["Collection Stage","Evaluation Stage","GM / Payment Approval","Delivery Stage","Settlement Stage","Completed"];
-const SCOL={"Collection Stage":"#C2984D","Evaluation Stage":"#719A58","GM / Payment Approval":"#D68910","Delivery Stage":"#386A59","Settlement Stage":"#675633","Completed":"#27AE60"};
-const PAL=["#386A59","#719A58","#C2984D","#675633","#2E86C1","#8E44AD","#D68910","#C0392B","#1ABC9C","#E67E22","#E74C3C","#16A085"];
-let raw=[],filtered=[],charts={},colMap={},kpiFlt=null,chFlt=null,modalRows=[];
-const num=v=>{if(v==null)return null;const s=String(v).replace(/[,\s%ETBetb]/g,"").trim();const n=parseFloat(s);return isNaN(n)?null:n};
-const cl=v=>{if(v==null)return null;const s=String(v).trim();return(s===""||s.startsWith("#")||s==="\u2014"||s.toLowerCase()==="in progress")?null:s};
-const etb=v=>{if(v==null||isNaN(v)||v===0)return"\u2014";if(v>=1e6)return`ETB ${(v/1e6).toFixed(2)}M`;if(v>=1e3)return`ETB ${(v/1e3).toFixed(0)}K`;return`ETB ${v.toLocaleString("en",{maximumFractionDigits:0})}`};
-const vl=v=>{if(v==null)return'<span class="varnil">\u2014</span>';return`<span class="${v>=0?"varpos":"varneg"}">${v>=0?"+":""}${Math.round(v)}d</span>`};
-const bg=(t,c)=>`<span class="badge ${c}">${t||"\u2014"}</span>`;
-const esc=s=>String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
-const uniq=(a,k)=>[...new Set(a.map(r=>r[k]).filter(Boolean))].sort();
-const grp=(a,k)=>a.reduce((m,r)=>{const v=r[k]||"?";(m[v]=m[v]||[]).push(r);return m},{});
-const sumF=(a,k)=>a.reduce((s,r)=>s+(r[k]||0),0);
-const avgF=(a,k)=>{const v=a.map(r=>r[k]).filter(v=>v!=null);return v.length?v.reduce((a,b)=>a+b,0)/v.length:null};
-const normS=s=>{if(!s)return"Pending";const m={settled:"Settled",setteld:"Settled",setteled:"Settled",stteled:"Settled"};const l=s.toLowerCase().trim();return m[l]||(l.charAt(0).toUpperCase()+l.slice(1))};
-function autoStage(r){
-  if(r.sett_status==="Settled")return"Completed";
-  if(r.voucher)return"Settlement Stage";
-  if(r.grn_no||r.grn_date)return"Settlement Stage";
-  if(r.act_del||r.qty_del)return"Delivery Stage";
-  if(r.cpv_date||r.cpv_no)return"GM / Payment Approval";
-  if(r.act_eval)return"Evaluation Stage";
-  if(r.act_coll)return"Collection Stage";
-  return"Collection Stage";
+
+// ── CONFIG ────────────────────────────────────────────────────────────────────
+const SHEET_ID   = "1JfT1mOPH3d9H3V4meUSqxw7EWagQNEas";
+const SHEET_NAME = "PROCUREMENT_LOG";
+const CSV_URL    = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${SHEET_NAME}`;
+
+const STAGE_ORDER  = ["Collection Stage","Evaluation Stage","GM / Payment Approval","Delivery Stage","Settlement Stage","Completed"];
+const STAGE_COLORS = {"Collection Stage":"#C2984D","Evaluation Stage":"#719A58","GM / Payment Approval":"#D68910","Delivery Stage":"#386A59","Settlement Stage":"#675633","Completed":"#27AE60"};
+const PALETTE      = ["#386A59","#719A58","#C2984D","#675633","#2E86C1","#8E44AD","#D68910","#C0392B","#1ABC9C","#E67E22","#16A085","#E74C3C"];
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+let rawData      = [];
+let filteredData = [];
+let charts       = {};
+let colMap       = {};     // header-name → index, built fresh each load
+let kpiFilter    = null;   // { field, label } — KPI card click
+let chartFilter  = null;   // { field, value, label } — chart element click
+let modalExportRows = [];
+
+// ── HELPERS ───────────────────────────────────────────────────────────────────
+const num   = v => { if(v==null) return null; const n=parseFloat(String(v).replace(/[,\s]/g,'')); return isNaN(n)?null:n; };
+const clean = v => { if(v==null||v===undefined) return null; const s=String(v).trim(); return (s===''||s.startsWith('#')||s==='—'||s.toLowerCase()==='in progress')?null:s; };
+const etb   = v => { if(v==null||isNaN(v)||v===0) return '—'; if(v>=1e6) return `ETB ${(v/1e6).toFixed(2)}M`; if(v>=1e3) return `ETB ${(v/1e3).toFixed(0)}K`; return `ETB ${Math.round(v).toLocaleString('en')}`; };
+const varLabel = v => { if(v===null) return '<span class="var-nil">—</span>'; return `<span class="${v>=0?'var-pos':'var-neg'}">${v>=0?'+':''}${Math.round(v)}d</span>`; };
+const badge = (text,cls) => `<span class="badge ${cls}">${text||'—'}</span>`;
+const esc   = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const groupBy = (arr,key) => arr.reduce((acc,row)=>{ const k=row[key]||'Unknown'; (acc[k]=acc[k]||[]).push(row); return acc; },{});
+const sumBy   = (arr,key) => arr.reduce((s,r)=>s+(r[key]||0),0);
+const avgBy   = (arr,key) => { const v=arr.map(r=>r[key]).filter(x=>x!==null); return v.length?v.reduce((a,b)=>a+b,0)/v.length:null; };
+
+function normStatus(s) {
+  if(!s) return 'Pending';
+  const map = {settled:'Settled',setteld:'Settled',setteled:'Settled',stteled:'Settled','settled.':'Settled'};
+  const l = s.toLowerCase().trim();
+  return map[l] || (l.charAt(0).toUpperCase()+l.slice(1));
 }
-function buildColMap(hdr){
-  const norm=s=>(s||"").toLowerCase().replace(/[\n\r]+/g," ").replace(/\s+/g," ").trim();
-  const F=[
-    ["row_id",["row id"]],["pr_no",["pr number"]],["pr_line",["pr line"]],
-    ["pr_date",["pr date"]],["pr_rec",["pr received"]],["lead_int",["internal lead time"]],
-    ["item",["item name"]],["category",["item category"]],["critical",["production critical"]],
-    ["uom",["uom"]],["qty_req",["qty requested"]],["dept",["requesting department"]],
-    ["priority",["priority level"]],["method",["procurement method"]],
-    ["coll_off",["collection officer"]],["std_coll",["std collection","standard collection"]],
-    ["act_coll",["actual collection"]],["coll_var",["collection variance"]],
-    ["coll_status",["collection status"]],["eval_off",["evaluation officer"]],
-    ["std_eval",["std evaluation","standard evaluation"]],["act_eval",["actual evaluation"]],
-    ["eval_var",["evaluation variance"]],["eval_delay",["evaluator delayance","evaluator delay"]],
-    ["eval_status",["evaluation status"]],["supplier",["supplier name"]],
-    ["base_etb",["base amount"]],["total_etb",["total amount with vat","total amount\nwith vat"]],
-    ["po_no",["po number"]],["pay_term",["payment term"]],["pay_pct",["payment %"]],
-    ["cpv_date",["cpv date"]],["cpv_no",["cpv number"]],["pay_var",["payment variance"]],
-    ["sched_del",["scheduled delivery"]],["act_del",["actual delivery"]],["del_var",["delivery variance"]],
-    ["qty_del",["qty delivered"]],["qty_rej",["qty rejected"]],
-    ["grn_date",["grn date"]],["grn_no",["grn number"]],
-    ["sett_date",["settlement date"]],["voucher",["voucher number"]],["inv_etb",["invoice amount"]],
-    ["inv_match",["invoice amount match"]],["legal_doc",["valid legal document"]],
-    ["grn_avail",["grn available"]],["match_r",["3-way match result","3-way match"]],
-    ["proformas",["no. of proformas","proformas"]],["sett_status",["settlement status"]],
-    ["stage",["current stage"]],["stage_pct",["stage progress"]],
-    ["cycle_time",["total cycle time"]],["lead_time",["total lead time"]],
-    ["remarks",["status remarks","remarks"]],["last_updated",["last updated"]],["updated_by",["updated by"]],
+
+// Auto-detect stage from filled fields
+function autoStage(r) {
+  if(r.sett_status==='Settled') return 'Completed';
+  if(r.voucher) return 'Settlement Stage';
+  if(r.grn_no || r.grn_date) return 'Settlement Stage';
+  if(r.act_del) return 'Delivery Stage';
+  if(r.cpv_date || r.cpv_no) return 'GM / Payment Approval';
+  if(r.act_eval) return 'Evaluation Stage';
+  if(r.act_coll) return 'Collection Stage';
+  return 'Collection Stage';
+}
+
+// ── HEADER-BASED COLUMN DETECTION ─────────────────────────────────────────────
+// Root fix: match column by header name, not hardcoded index.
+// This survives Google Sheets CSV export quirks and multiline header normalization.
+function buildColMap(headerRow) {
+  const norm = s => (s||'').toLowerCase().replace(/[\n\r]+/g,' ').replace(/\s+/g,' ').trim();
+  const FIELDS = [
+    ['row_id',      ['row id']],
+    ['pr_no',       ['pr number']],
+    ['pr_line',     ['pr line']],
+    ['pr_date',     ['pr date']],
+    ['pr_rec',      ['pr received']],
+    ['lead_int',    ['internal lead time']],
+    ['item',        ['item name']],
+    ['category',    ['item category']],
+    ['critical',    ['production critical']],
+    ['uom',         ['uom']],
+    ['qty_req',     ['qty requested']],
+    ['dept',        ['requesting department']],
+    ['priority',    ['priority level']],
+    ['method',      ['procurement method']],
+    ['coll_off',    ['collection officer']],
+    ['std_coll',    ['std collection','standard collection']],
+    ['act_coll',    ['actual collection']],
+    ['coll_var',    ['collection variance']],
+    ['coll_status', ['collection status']],
+    ['eval_off',    ['evaluation officer']],
+    ['std_eval',    ['std evaluation','standard evaluation']],
+    ['act_eval',    ['actual evaluation']],
+    ['eval_var',    ['evaluation variance']],
+    ['eval_delay',  ['evaluator delayance','evaluator delay']],
+    ['eval_status', ['evaluation status']],
+    ['supplier',    ['supplier name']],
+    ['base_etb',    ['base amount']],
+    ['total_etb',   ['total amount with vat']],   // <-- VAT column ONLY
+    ['po_no',       ['po number']],
+    ['pay_term',    ['payment term']],             // <-- must NOT match po number
+    ['pay_pct',     ['payment %','payment percent']],
+    ['cpv_date',    ['cpv date']],
+    ['cpv_no',      ['cpv number']],
+    ['pay_var',     ['payment variance']],
+    ['sched_del',   ['scheduled delivery']],
+    ['act_del',     ['actual delivery']],
+    ['del_var',     ['delivery variance']],
+    ['qty_del',     ['qty delivered']],
+    ['qty_rej',     ['qty rejected']],
+    ['grn_date',    ['grn date']],
+    ['grn_no',      ['grn number']],
+    ['sett_date',   ['settlement date']],
+    ['voucher',     ['voucher number']],
+    ['inv_etb',     ['invoice amount']],
+    ['inv_match',   ['invoice amount match']],
+    ['legal_doc',   ['valid legal document']],
+    ['grn_avail',   ['grn available']],
+    ['match',       ['3-way match result','3-way match']],
+    ['proformas',   ['no. of proformas','proformas']],
+    ['sett_status', ['settlement status']],
+    ['stage',       ['current stage']],
+    ['stage_pct',   ['stage progress']],
+    ['cycle_time',  ['total cycle time']],
+    ['lead_time',   ['total lead time']],
+    ['remarks',     ['status remarks','remarks']],
+    ['last_updated',['last updated']],
+    ['updated_by',  ['updated by']],
   ];
-  const map={};
-  hdr.forEach((h,i)=>{const n=norm(h);for(const[f,ps]of F){if(!(f in map)&&ps.some(p=>n.includes(p))){map[f]=i;break;}}});
-  console.log("ColMap:",map);
+  const map = {};
+  headerRow.forEach((h,i) => {
+    const n = norm(h);
+    for(const [field,patterns] of FIELDS) {
+      if(!(field in map) && patterns.some(p=>n.includes(p))) {
+        map[field]=i; break;
+      }
+    }
+  });
+  console.log('Column map built:', map);
   return map;
 }
-function parseRow(raw,cm){
-  const g=f=>{const i=cm[f];if(i===undefined||i>=raw.length)return null;return cl(raw[i])};
-  const n=f=>num(g(f));
-  const sett=normS(g("sett_status"));
-  const prio=(g("priority")||"").toUpperCase().trim();
-  const tv=n("total_etb");
-  const cv=n("coll_var");const ev=n("eval_var");
-  const r={
-    row_id:g("row_id"),pr_no:g("pr_no"),pr_line:g("pr_line"),
-    pr_date:g("pr_date"),pr_rec:g("pr_rec"),lead_int:n("lead_int"),
-    item:g("item"),category:g("category"),critical:g("critical"),
-    uom:g("uom"),qty_req:n("qty_req"),
-    dept:g("dept"),priority:prio,method:g("method"),
-    coll_off:g("coll_off"),std_coll:g("std_coll"),act_coll:g("act_coll"),
-    coll_var:cv,coll_status:g("coll_status"),
-    eval_off:g("eval_off"),std_eval:g("std_eval"),act_eval:g("act_eval"),
-    eval_var:ev,eval_delay:n("eval_delay"),eval_status:g("eval_status"),
-    supplier:g("supplier"),base_etb:n("base_etb"),total_etb:tv,
-    po_no:g("po_no"),pay_term:g("pay_term"),pay_pct:n("pay_pct"),
-    cpv_date:g("cpv_date"),cpv_no:g("cpv_no"),pay_var:n("pay_var"),
-    sched_del:g("sched_del"),act_del:g("act_del"),del_var:n("del_var"),
-    qty_del:n("qty_del"),qty_rej:n("qty_rej"),
-    grn_date:g("grn_date"),grn_no:g("grn_no"),
-    sett_date:g("sett_date"),voucher:g("voucher"),inv_etb:n("inv_etb"),
-    inv_match:g("inv_match"),legal_doc:g("legal_doc"),grn_avail:g("grn_avail"),
-    match_r:(g("match_r")||"").toUpperCase(),
-    proformas:n("proformas"),sett_status:sett,stage:null,
-    cycle_time:n("cycle_time"),lead_time:n("lead_time"),
-    remarks:g("remarks"),last_updated:g("last_updated"),updated_by:g("updated_by"),
+
+function parseRow(rawRow, cm) {
+  const g = f => { const i=cm[f]; if(i===undefined||i>=rawRow.length) return null; return clean(rawRow[i]); };
+  const n = f => num(g(f));
+
+  const sett  = normStatus(g('sett_status'));
+  const prio  = (g('priority')||'').toUpperCase().trim();
+  const cv    = n('coll_var');
+  const ev    = n('eval_var');
+
+  const r = {
+    row_id:    g('row_id'),     pr_no:     g('pr_no'),     pr_line: g('pr_line'),
+    pr_date:   g('pr_date'),    pr_rec:    g('pr_rec'),    lead_int: n('lead_int'),
+    item:      g('item'),       category:  g('category'),  critical: g('critical'),
+    uom:       g('uom'),        qty_req:   n('qty_req'),
+    dept:      g('dept'),       priority:  prio,           method:   g('method'),
+    coll_off:  g('coll_off'),   std_coll:  g('std_coll'),  act_coll: g('act_coll'),
+    coll_var:  cv,              coll_status: g('coll_status'),
+    eval_off:  g('eval_off'),   std_eval:  g('std_eval'),  act_eval: g('act_eval'),
+    eval_var:  ev,              eval_delay: n('eval_delay'), eval_status: g('eval_status'),
+    supplier:  g('supplier'),
+    base_etb:  n('base_etb'),
+    total_etb: n('total_etb'),   // Always VAT-inclusive column
+    po_no:     g('po_no'),      pay_term:  g('pay_term'),  pay_pct: n('pay_pct'),
+    cpv_date:  g('cpv_date'),   cpv_no:    g('cpv_no'),    pay_var: n('pay_var'),
+    sched_del: g('sched_del'),  act_del:   g('act_del'),   del_var: n('del_var'),
+    qty_del:   n('qty_del'),    qty_rej:   n('qty_rej'),
+    grn_date:  g('grn_date'),   grn_no:    g('grn_no'),
+    sett_date: g('sett_date'),  voucher:   g('voucher'),   inv_etb: n('inv_etb'),
+    inv_match: g('inv_match'),  legal_doc: g('legal_doc'), grn_avail: g('grn_avail'),
+    match:     (g('match')||'').toUpperCase(),
+    proformas: n('proformas'),  sett_status: sett,
+    cycle_time: n('cycle_time'), lead_time: n('lead_time'),
+    remarks:   g('remarks'),    last_updated: g('last_updated'), updated_by: g('updated_by'),
   };
-  r.stage=g("stage")||autoStage(r);
-  r.auto_stage=autoStage(r);
-  r.is_settled=sett==="Settled";
-  r.is_urgent=prio==="URGENT";
-  r.is_delayed=(cv!==null&&cv<0)||(ev!==null&&ev<0);
-  r.has_voucher=!!r.voucher;
+
+  // Derived
+  r.stage       = g('stage') || autoStage(r);
+  r.auto_stage  = autoStage(r);
+  r.is_settled  = sett === 'Settled';
+  r.is_urgent   = prio === 'URGENT';
+  r.is_delayed  = (cv !== null && cv < 0) || (ev !== null && ev < 0);
+  r.has_voucher = !!r.voucher;
   return r;
 }
-async function loadData(){
-  document.getElementById("loading-state").style.display="flex";
-  document.getElementById("dashboard").style.display="none";
-  try{
-    const res=await fetch(CSV_URL+"&nc="+Date.now());
-    if(!res.ok)throw new Error("HTTP "+res.status);
-    const txt=await res.text();
-    const pres=Papa.parse(txt,{header:false,skipEmptyLines:true});
-    const rows=pres.data;
-    const hdrRow=rows[2]||[];
-    colMap=buildColMap(hdrRow);
-    raw=rows.slice(3).filter(r=>{
-      const pi=colMap["pr_no"],ii=colMap["item"];
-      const pr=pi!==undefined?cl(r[pi]):null;
-      const it=ii!==undefined?cl(r[ii]):null;
-      return(pr&&!pr.toLowerCase().startsWith("pr num")&&!pr.toLowerCase().startsWith("pr no"))||(it&&!it.toLowerCase().startsWith("item name"));
-    }).map(r=>parseRow(r,colMap));
-    console.log("Loaded",raw.length,"rows");
-    populateFilters();applyFilters();
-    document.getElementById("loading-state").style.display="none";
-    document.getElementById("dashboard").style.display="block";
-    document.getElementById("last-ref").textContent="Updated "+new Date().toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"});
-  }catch(e){
-    document.getElementById("loading-state").innerHTML=`<div class="err-box">&#9888;&#65039; ${e.message}<br><small>Ensure sheet is shared: Anyone with link can view. Sheet name must be PROCUREMENT_LOG</small></div>`;
+
+// ── DATA LOAD ─────────────────────────────────────────────────────────────────
+async function loadData() {
+  document.getElementById('loading-state').style.display = 'flex';
+  document.getElementById('dashboard').style.display    = 'none';
+  try {
+    const resp = await fetch(CSV_URL + '&t=' + Date.now());
+    if(!resp.ok) throw new Error('HTTP ' + resp.status);
+    const text = await resp.text();
+    const result = Papa.parse(text, { header:false, skipEmptyLines:true });
+    const rows = result.data;
+    // rows[0]=title row, rows[1]=group headers, rows[2]=column headers, rows[3+]=data
+    const headerRow = rows[2] || [];
+    colMap = buildColMap(headerRow);
+
+    if(!('item' in colMap) && !('pr_no' in colMap)) {
+      throw new Error('Could not detect column headers. Check that the sheet name is exactly "PROCUREMENT_LOG".');
+    }
+
+    const prIdx   = colMap['pr_no'];
+    const itemIdx = colMap['item'];
+    rawData = rows.slice(3)
+      .filter(r => {
+        const pr   = prIdx   !== undefined ? clean(r[prIdx])   : null;
+        const item = itemIdx !== undefined ? clean(r[itemIdx]) : null;
+        if(pr && (pr.toLowerCase().includes('pr number') || pr.toLowerCase().includes('pr no'))) return false;
+        if(item && item.toLowerCase().includes('item name')) return false;
+        return !!(pr || item);
+      })
+      .map(r => parseRow(r, colMap));
+
+    console.log('Loaded', rawData.length, 'rows');
+    populateFilters();
+    applyFilters();
+    document.getElementById('loading-state').style.display = 'none';
+    document.getElementById('dashboard').style.display    = 'block';
+    document.getElementById('last-refresh').textContent =
+      'Updated ' + new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+  } catch(e) {
+    document.getElementById('loading-state').innerHTML =
+      `<div class="error-box">⚠️ Failed to load: ${e.message}<br>
+      <small>Ensure the Google Sheet is shared as "Anyone with the link can view" and sheet name is exactly PROCUREMENT_LOG</small></div>`;
     console.error(e);
   }
 }
-function reloadData(){loadData();}
-setInterval(reloadData,300000);
-function populateFilters(){
-  const deps=uniq(raw,"dept");
-  const offs=[...new Set([...raw.map(r=>r.coll_off),...raw.map(r=>r.eval_off)].filter(Boolean))].sort();
-  const mths=uniq(raw,"method");
-  fillSel("f-dept",deps,"All Departments");fillSel("f-officer",offs,"All Officers");fillSel("f-method",mths,"All Methods");
+
+function reloadData() { loadData(); }
+setInterval(reloadData, 5*60*1000);
+
+// ── FILTERS ───────────────────────────────────────────────────────────────────
+function populateFilters() {
+  const depts   = [...new Set(rawData.map(r=>r.dept).filter(Boolean))].sort();
+  const officers= [...new Set([...rawData.map(r=>r.coll_off),...rawData.map(r=>r.eval_off)].filter(Boolean))].sort();
+  const methods = [...new Set(rawData.map(r=>r.method).filter(Boolean))].sort();
+  fillSelect('f-dept',    depts,   'All Departments');
+  fillSelect('f-officer', officers,'All Officers');
+  fillSelect('f-method',  methods, 'All Methods');
 }
-function fillSel(id,opts,ph){
-  const s=document.getElementById(id);
-  s.innerHTML=`<option value="">${ph}</option>`+opts.map(o=>`<option>${esc(o)}</option>`).join("");
+
+function fillSelect(id, options, placeholder) {
+  const sel = document.getElementById(id);
+  sel.innerHTML = `<option value="">${placeholder}</option>` + options.map(o=>`<option>${esc(o)}</option>`).join('');
 }
-function hasAF(){return["f-stage","f-dept","f-officer","f-priority","f-method","f-sett"].some(id=>document.getElementById(id).value!=="")||kpiFlt||chFlt;}
-function applyKF(r){
-  if(!kpiFlt)return true;
-  const f=kpiFlt.field;
-  if(f==="urgent")return r.is_urgent&&!r.is_settled;
-  if(f==="delayed")return r.is_delayed&&!r.is_settled;
-  if(f==="gm")return r.stage==="GM / Payment Approval";
-  if(f==="fail")return r.match_r==="FAIL";
-  if(f==="vouch")return["Settlement Stage","Completed"].includes(r.stage)&&!r.has_voucher;
-  if(f==="sett")return r.is_settled;
-  if(f==="notsett")return!r.is_settled;
-  return true;
+
+function hasActiveFilters() {
+  return ['f-stage','f-dept','f-officer','f-priority','f-method','f-sett']
+    .some(id => document.getElementById(id).value !== '') || kpiFilter || chartFilter;
 }
-function applyCF(r){
-  if(!chFlt)return true;
-  const{field:f,value:v}=chFlt;
-  if(f==="dept")return r.dept===v;
-  if(f==="stage")return r.stage===v;
-  if(f==="method")return r.method===v;
-  if(f==="supplier")return r.supplier===v;
-  if(f==="pay_term")return r.pay_term===v;
-  return true;
-}
-function applyFilters(){
-  const st=document.getElementById("f-stage").value;
-  const dp=document.getElementById("f-dept").value;
-  const of=document.getElementById("f-officer").value;
-  const pr=document.getElementById("f-priority").value;
-  const mt=document.getElementById("f-method").value;
-  const se=document.getElementById("f-sett").value;
-  filtered=raw.filter(r=>(!st||r.stage===st)&&(!dp||r.dept===dp)&&(!of||r.coll_off===of||r.eval_off===of)&&(!pr||r.priority===pr.toUpperCase())&&(!mt||r.method===mt)&&(!se||r.sett_status===se)&&applyKF(r)&&applyCF(r));
-  document.getElementById("s-tot").textContent=raw.length;
-  document.getElementById("s-sho").textContent=filtered.length;
-  document.getElementById("s-urg").textContent=filtered.filter(r=>r.is_urgent&&!r.is_settled).length;
-  document.getElementById("s-del").textContent=filtered.filter(r=>r.is_delayed&&!r.is_settled).length;
-  document.getElementById("s-spd").textContent=etb(sumF(filtered,"total_etb"));
-  document.getElementById("clr-btn").className="clr-btn"+(hasAF()?" show":"");
+
+function applyFilters() {
+  const stage   = document.getElementById('f-stage').value;
+  const dept    = document.getElementById('f-dept').value;
+  const officer = document.getElementById('f-officer').value;
+  const prio    = document.getElementById('f-priority').value;
+  const method  = document.getElementById('f-method').value;
+  const sett    = document.getElementById('f-sett').value;
+
+  filteredData = rawData.filter(r =>
+    (!stage  || r.stage    === stage)                                   &&
+    (!dept   || r.dept     === dept)                                    &&
+    (!officer|| r.coll_off === officer || r.eval_off === officer)       &&
+    (!prio   || r.priority === prio.toUpperCase())                      &&
+    (!method || r.method   === method)                                  &&
+    (!sett   || r.sett_status === sett)                                 &&
+    applyKpiFilter(r) && applyChartFilter(r)
+  );
+
+  document.getElementById('stat-total').textContent   = rawData.length;
+  document.getElementById('stat-showing').textContent = filteredData.length;
+  document.getElementById('stat-urgent').textContent  = filteredData.filter(r=>r.is_urgent&&!r.is_settled).length;
+  document.getElementById('stat-delayed').textContent = filteredData.filter(r=>r.is_delayed&&!r.is_settled).length;
+  document.getElementById('stat-spend').textContent   = etb(sumBy(filteredData,'total_etb'));
+
+  const clrBtn = document.getElementById('clear-btn');
+  if(clrBtn) clrBtn.className = 'clear-filters-btn' + (hasActiveFilters()?' visible':'');
+
   renderAll();
 }
-function setKF(field,label){kpiFlt=(kpiFlt&&kpiFlt.field===field)?null:{field,label};applyFilters();}
-function setCF(field,value,label){chFlt=(chFlt&&chFlt.field===field&&chFlt.value===value)?null:{field,value,label};applyFilters();}
-function clearFilters(){["f-stage","f-dept","f-officer","f-priority","f-method","f-sett"].forEach(id=>document.getElementById(id).value="");kpiFlt=null;chFlt=null;applyFilters();}
-function kill(id){if(charts[id]){charts[id].destroy();delete charts[id];}}
-const BO={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},datalabels:{display:false}},scales:{x:{grid:{color:"#F0F4F0"},ticks:{font:{family:"Montserrat",size:9},color:"#5E6B64"}},y:{grid:{color:"#F0F4F0"},ticks:{font:{family:"Montserrat",size:9},color:"#5E6B64"}}}};
-function barC(id,labels,data,colors,opts={}){
-  kill(id);const ctx=document.getElementById(id);if(!ctx)return;
-  const h=opts.h||false;
-  charts[id]=new Chart(ctx,{type:"bar",data:{labels,datasets:[{data,backgroundColor:Array.isArray(colors)?colors:data.map(()=>colors||"#386A59"),borderRadius:3,borderSkipped:false}]},options:{...BO,indexAxis:h?"y":"x",plugins:{...BO.plugins,datalabels:{display:true,anchor:h?"end":"end",align:h?"end":"top",color:"#1F2A26",font:{family:"Montserrat",size:9,weight:"600"},formatter:(v,c)=>opts.lbl?opts.lbl(v):v===0?"":v},tooltip:{callbacks:{label:c=>opts.tip?opts.tip(c.raw):(" "+c.raw)}}},onClick:opts.click||null,layout:{padding:{top:h?0:20,right:h?50:0}}}});
+
+function applyKpiFilter(r) {
+  if(!kpiFilter) return true;
+  const f = kpiFilter.field;
+  if(f==='urgent')   return r.is_urgent && !r.is_settled;
+  if(f==='delayed')  return r.is_delayed && !r.is_settled;
+  if(f==='gm')       return r.stage === 'GM / Payment Approval';
+  if(f==='matchfail')return r.match === 'FAIL';
+  if(f==='novouch')  return ['Settlement Stage','Completed'].includes(r.stage) && !r.has_voucher;
+  if(f==='settled')  return r.is_settled;
+  if(f==='notsett')  return !r.is_settled;
+  return true;
 }
-function varC(id,labels,data){
-  kill(id);const ctx=document.getElementById(id);if(!ctx)return;
-  const colors=data.map(v=>v==null?"#CCC":v>=0?"#719A58":"#C0392B");
-  charts[id]=new Chart(ctx,{type:"bar",data:{labels,datasets:[{data:data.map(v=>v==null?0:v),backgroundColor:colors,borderRadius:3,borderSkipped:false}]},options:{...BO,indexAxis:"y",plugins:{...BO.plugins,datalabels:{display:true,anchor:"end",align:"end",color:c=>c.dataset.data[c.dataIndex]>=0?"#386A59":"#C0392B",font:{family:"Montserrat",size:9,weight:"600"},formatter:v=>v===0?"\u2014":(v>0?"+":"")+Math.round(v)+"d"},tooltip:{callbacks:{label:c=>(c.raw>=0?"+":"")+c.raw+"d"}}},layout:{padding:{right:55}}}});
+
+function applyChartFilter(r) {
+  if(!chartFilter) return true;
+  const {field,value} = chartFilter;
+  if(field==='stage')    return r.stage    === value;
+  if(field==='dept')     return r.dept     === value;
+  if(field==='supplier') return r.supplier === value;
+  if(field==='pay_term') return r.pay_term === value;
+  if(field==='method')   return r.method   === value;
+  return true;
 }
-function pieC(id,labels,data,colors,opts={}){
-  kill(id);const ctx=document.getElementById(id);if(!ctx)return;
-  const tot=data.reduce((a,b)=>a+b,0);
-  charts[id]=new Chart(ctx,{type:"doughnut",data:{labels,datasets:[{data,backgroundColor:colors||PAL,borderWidth:2,borderColor:"#fff",hoverOffset:6}]},options:{responsive:true,maintainAspectRatio:false,cutout:"50%",plugins:{legend:{display:true,position:"bottom",labels:{font:{family:"Montserrat",size:10},padding:10,boxWidth:12}},datalabels:{display:c=>c.dataset.data[c.dataIndex]/tot>0.04,color:"#fff",font:{family:"Montserrat",size:10,weight:"700"},formatter:v=>Math.round(v/tot*100)+"%"},tooltip:{callbacks:{label:c=>" "+c.label+": "+etb(c.raw)+" ("+Math.round(c.raw/tot*100)+"%)"}}},onClick:opts.click||null}});
+
+function setKpiFilter(field, label) {
+  if(kpiFilter && kpiFilter.field===field) kpiFilter=null;
+  else kpiFilter = {field, label};
+  applyFilters();
 }
-function tbl(hdrs,rows,empty="No data"){
-  if(!rows.length)return`<div class="empty-s"><div class="ico">&#128205;</div>${empty}</div>`;
-  return`<div class="tbl-scroll"><table><thead><tr>${hdrs.map(h=>`<th>${h}</th>`).join("")}</tr></thead><tbody>${rows.map(r=>`<tr>${r.map(c=>`<td>${c==null?"\u2014":c}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
+
+function setChartFilter(field, value, label) {
+  if(chartFilter && chartFilter.field===field && chartFilter.value===value) chartFilter=null;
+  else chartFilter = {field, value, label};
+  applyFilters();
 }
-function openModal(title,hdrs,rows){
-  modalRows=rows.map(r=>r.map(c=>String(c||"\u2014").replace(/<[^>]+>/g,"")));
-  document.getElementById("modal-title").innerHTML=title;
-  document.getElementById("modal-body").innerHTML=tbl(hdrs,rows,"No items.");
-  document.getElementById("modal-ov").classList.add("open");
+
+function clearAllFilters() {
+  ['f-stage','f-dept','f-officer','f-priority','f-method','f-sett'].forEach(id=>document.getElementById(id).value='');
+  kpiFilter=null; chartFilter=null;
+  applyFilters();
 }
-function closeModal(){document.getElementById("modal-ov").classList.remove("open");}
-function exportModalCSV(){
-  const ttl=document.getElementById("modal-title").textContent;
-  const csv=modalRows.map(r=>r.map(c=>`"${c.replace(/"/g,\'\'\'\')}"` ).join(",")).join("\n");
-  const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));a.download="Wanza_"+ttl.replace(/[^a-z0-9]/gi,"_")+".csv";a.click();
+
+// ── CHART HELPERS ─────────────────────────────────────────────────────────────
+function destroyChart(id) { if(charts[id]){ charts[id].destroy(); delete charts[id]; } }
+
+const BASE_OPTS = {
+  responsive:true, maintainAspectRatio:false,
+  plugins:{
+    legend:{display:false},
+    datalabels:{display:false}
+  },
+  scales:{
+    x:{grid:{color:'#F0F0F0'},ticks:{font:{family:'Montserrat',size:9},color:'#5E6B64'}},
+    y:{grid:{color:'#F0F0F0'},ticks:{font:{family:'Montserrat',size:9},color:'#5E6B64'}}
+  }
+};
+
+function barChart(id, labels, data, colors, opts={}) {
+  destroyChart(id);
+  const ctx = document.getElementById(id);
+  if(!ctx) return;
+  const h = opts.horizontal || false;
+  charts[id] = new Chart(ctx, {
+    type:'bar',
+    data:{ labels, datasets:[{ data, backgroundColor:Array.isArray(colors)?colors:data.map(()=>colors||'#386A59'), borderRadius:4, borderSkipped:false }] },
+    options:{
+      ...BASE_OPTS, indexAxis: h?'y':'x',
+      plugins:{
+        ...BASE_OPTS.plugins,
+        datalabels:{
+          display:true,
+          anchor: h?'end':'end',
+          align:  h?'end':'top',
+          color:'#1F2A26',
+          font:{family:'Montserrat',size:9,weight:'600'},
+          formatter:(v,ctx)=> opts.lblFmt ? opts.lblFmt(v) : (v===0?'':v),
+        },
+        tooltip:{callbacks:{label: c=> ' '+(opts.tipFmt?opts.tipFmt(c.raw):c.raw)}}
+      },
+      onClick: opts.onClick || null,
+      layout:{padding:{top:h?0:18,right:h?50:0}}
+    }
+  });
 }
-function exportCSV(){
-  const hdrs=["Row ID","PR No","Item","Dept","Priority","Stage","Supplier","Total ETB (VAT)","Pay Term","Coll Var","Eval Var","Sett Status","3-Way Match","Voucher","Remarks"];
-  const rows=filtered.map(r=>[r.row_id,r.pr_no,r.item,r.dept,r.priority,r.stage,r.supplier,r.total_etb||0,r.pay_term,r.coll_var,r.eval_var,r.sett_status,r.match_r,r.voucher,r.remarks].map(v=>"\""+String(v||"").replace(/"/g,"\'\'\'")+"\"").join(","));
-  const csv=[hdrs.map(h=>"\""+h+"\"").join(","),...rows].join("\n");
-  const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));a.download="Wanza_Export_"+new Date().toISOString().slice(0,10)+".csv";a.click();
+
+function varBarChart(id, labels, data) {
+  destroyChart(id);
+  const ctx = document.getElementById(id);
+  if(!ctx) return;
+  const colors = data.map(v=>v===null?'#CCC':v>=0?'#719A58':'#C0392B');
+  charts[id] = new Chart(ctx, {
+    type:'bar',
+    data:{ labels, datasets:[{ data:data.map(v=>v===null?0:v), backgroundColor:colors, borderRadius:3, borderSkipped:false }] },
+    options:{
+      ...BASE_OPTS, indexAxis:'y',
+      plugins:{
+        ...BASE_OPTS.plugins,
+        datalabels:{
+          display:true, anchor:'end', align:'end',
+          color: ctx=>ctx.dataset.data[ctx.dataIndex]>=0?'#386A59':'#C0392B',
+          font:{family:'Montserrat',size:9,weight:'600'},
+          formatter:v=>v===0?'—':(v>0?'+':'')+Math.round(v)+'d',
+        },
+        tooltip:{callbacks:{label:c=>(c.raw>=0?'+':'')+c.raw+'d'}}
+      },
+      scales:{
+        x:{...BASE_OPTS.scales.x,title:{display:true,text:'Days (+ ahead, – delayed)',font:{family:'Montserrat',size:9},color:'#5E6B64'}},
+        y:{...BASE_OPTS.scales.y,grid:{display:false}}
+      },
+      layout:{padding:{right:55}}
+    }
+  });
 }
-function switchTab(id,btn){document.querySelectorAll(".tab-panel").forEach(p=>p.classList.remove("active"));document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active"));document.getElementById("tab-"+id).classList.add("active");btn.classList.add("active");}
-function renderAll(){renderExec();renderOps();renderPeople();renderSuppliers();renderCycle();renderFinance();renderAudit();}
-function kc(field,extraCls=""){return((kpiFlt&&kpiFlt.field===field)?" af":"")+extraCls;}
-function renderExec(){
-  const d=filtered;const tot=d.length;const prs=new Set(d.map(r=>r.pr_no).filter(Boolean)).size;
-  const tvat=sumF(d,"total_etb");const sett=d.filter(r=>r.is_settled);const svat=sumF(sett,"total_etb");
-  const pctS=tot?Math.round(sett.length/tot*100):0;
-  const urg=d.filter(r=>r.is_urgent&&!r.is_settled).length;
-  const del=d.filter(r=>r.is_delayed&&!r.is_settled).length;
-  const gm=d.filter(r=>r.stage==="GM / Payment Approval").length;
-  const mf=d.filter(r=>r.match_r==="FAIL").length;
-  const nv=d.filter(r=>["Settlement Stage","Completed"].includes(r.stage)&&!r.has_voucher).length;
-  const sc={};STAGES.forEach(s=>sc[s]=0);d.forEach(r=>{if(sc[r.stage]!==undefined)sc[r.stage]++;else sc["Collection Stage"]++;});
-  const mis=d.filter(r=>r.stage&&r.auto_stage&&r.stage!==r.auto_stage).length;
-  const deptSpend={};d.forEach(r=>{if(r.dept&&r.total_etb)deptSpend[r.dept]=(deptSpend[r.dept]||0)+r.total_etb;});
-  const depts=Object.entries(deptSpend).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);
-  document.getElementById("tab-exec").innerHTML=`
-    ${mis>0?`<div class="notice"><strong>&#9888; Stage Mismatch:</strong> ${mis} items have a manually-set "Current Stage" that doesn't match their filled-in data. Auto-detect formula for column AY:<br><code>=IF(AX4="Settled","Completed",IF(AQ4&lt;&gt;"","Settlement Stage",IF(AN4&lt;&gt;"","Settlement Stage",IF(AJ4&lt;&gt;"","Delivery Stage",IF(AF4&lt;&gt;"","GM / Payment Approval",IF(V4&lt;&gt;"","Evaluation Stage","Collection Stage"))))))</code></div>`:""}
-    ${kpiFlt?`<div class="filter-strip">&#128269; Filtered by: <strong>${kpiFlt.label}</strong> &mdash; ${filtered.length} items<button onclick="clearFilters()">&#10005; Clear</button></div>`:""}
+
+function pieChart(id, labels, data, colors, opts={}) {
+  destroyChart(id);
+  const ctx = document.getElementById(id);
+  if(!ctx) return;
+  const total = data.reduce((a,b)=>a+b,0);
+  charts[id] = new Chart(ctx, {
+    type:'doughnut',
+    data:{ labels, datasets:[{ data, backgroundColor:colors||PALETTE, borderWidth:2, borderColor:'#fff', hoverOffset:6 }] },
+    options:{
+      responsive:true, maintainAspectRatio:false, cutout:'50%',
+      plugins:{
+        legend:{display:true,position:'bottom',labels:{font:{family:'Montserrat',size:10},padding:10,boxWidth:12}},
+        datalabels:{
+          display: c=>total>0&&c.dataset.data[c.dataIndex]/total>0.04,
+          color:'#fff',
+          font:{family:'Montserrat',size:10,weight:'700'},
+          formatter:(v)=>total>0?Math.round(v/total*100)+'%':'',
+        },
+        tooltip:{callbacks:{label:c=>' '+c.label+': '+(opts.tipFmt?opts.tipFmt(c.raw):c.raw.toLocaleString())+' ('+Math.round(c.raw/total*100)+'%)'}}
+      },
+      onClick: opts.onClick || null,
+    }
+  });
+}
+
+// ── TABLE BUILDER ─────────────────────────────────────────────────────────────
+function buildTable(headers, rows, emptyMsg='No data') {
+  if(!rows.length) return `<div class="empty-state"><div class="icon">📭</div>${emptyMsg}</div>`;
+  return `<div class="tbl-scroll"><table>
+    <thead><tr>${headers.map(h=>`<th>${h}</th>`).join('')}</tr></thead>
+    <tbody>${rows.map(r=>`<tr>${r.map(c=>`<td>${c===null||c===undefined?'—':c}</td>`).join('')}</tr>`).join('')}</tbody>
+  </table></div>`;
+}
+
+// ── MODAL ─────────────────────────────────────────────────────────────────────
+function openModal(title, count, headers, rows) {
+  modalExportRows = rows.map(r=>r.map(c=>String(c||'—').replace(/<[^>]+>/g,'')));
+  document.getElementById('modal-title').innerHTML = `${title} <span>(${count} items)</span>`;
+  document.getElementById('modal-body').innerHTML  = buildTable(headers, rows, 'No matching items.');
+  document.getElementById('modal-overlay').classList.add('open');
+}
+function closeModal() { document.getElementById('modal-overlay').classList.remove('open'); }
+function exportModalCSV() {
+  const title = document.getElementById('modal-title').textContent.split('(')[0].trim();
+  const csv   = modalExportRows.map(r=>r.map(c=>`"${c.replace(/"/g,"''")}"`).join(',')).join('\n');
+  dlCSV(csv, 'Wanza_'+title.replace(/[^a-z0-9]/gi,'_')+'.csv');
+}
+function dlCSV(csv, name) {
+  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'})); a.download=name; a.click();
+}
+
+function exportCSV() {
+  const h=['Row ID','PR No','Item','Dept','Priority','Stage','Supplier','Total ETB (VAT)','Pay Term','Coll Var','Eval Var','Sett Status','3-Way Match','Voucher','Remarks'];
+  const rows=filteredData.map(r=>[r.row_id,r.pr_no,r.item,r.dept,r.priority,r.stage,r.supplier,r.total_etb||0,r.pay_term,r.coll_var,r.eval_var,r.sett_status,r.match,r.voucher,r.remarks].map(v=>`"${String(v||'').replace(/"/g,"''")}"`).join(','));
+  dlCSV([h.map(x=>`"${x}"`).join(','),...rows].join('\n'), `Wanza_Export_${new Date().toISOString().slice(0,10)}.csv`);
+}
+
+// ── TAB SWITCHING ─────────────────────────────────────────────────────────────
+function switchTab(id, btn) {
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ── KPI CARD ACTIVE STATE ─────────────────────────────────────────────────────
+function kpiClass(field, extra='') {
+  return extra + (kpiFilter && kpiFilter.field===field ? ' active-kpi' : '');
+}
+
+// ── RENDER ALL ────────────────────────────────────────────────────────────────
+function renderAll() {
+  renderExec();
+  renderOps();
+  renderPeople();
+  renderSuppliers();
+  renderCycle();
+  renderFinance();
+  renderAudit();
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// TAB 1: EXECUTIVE SUMMARY
+// ═════════════════════════════════════════════════════════════════════════════
+function renderExec() {
+  const d = filteredData;
+  const total      = d.length;
+  const totalSpend = sumBy(d,'total_etb');           // VAT-inclusive
+  const settled    = d.filter(r=>r.is_settled);
+  const settSpend  = sumBy(settled,'total_etb');
+  const pctSett    = total ? Math.round(settled.length/total*100) : 0;
+  const openUrgent = d.filter(r=>r.is_urgent&&!r.is_settled).length;
+  const delayed    = d.filter(r=>r.is_delayed&&!r.is_settled).length;
+  const gmPend     = d.filter(r=>r.stage==='GM / Payment Approval').length;
+  const matchFail  = d.filter(r=>r.match==='FAIL').length;
+  const noVoucher  = d.filter(r=>['Settlement Stage','Completed'].includes(r.stage)&&!r.has_voucher).length;
+
+  const stageCounts = {};
+  STAGE_ORDER.forEach(s=>stageCounts[s]=0);
+  d.forEach(r=>{ if(stageCounts[r.stage]!==undefined) stageCounts[r.stage]++; });
+
+  const mismatches = d.filter(r=>r.stage && r.auto_stage && r.stage!==r.auto_stage).length;
+  const deptSpend  = {};
+  d.forEach(r=>{ if(r.dept && r.total_etb) deptSpend[r.dept]=(deptSpend[r.dept]||0)+r.total_etb; });
+  const depts = Object.entries(deptSpend).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);
+
+  const activeChartLabel = chartFilter ? `<div class="filter-strip visible">
+    <span>🔍 Chart filter: <strong>${chartFilter.label}</strong> — showing ${d.length} items</span>
+    <button onclick="clearAllFilters()">✕</button>
+  </div>` : '';
+
+  const activeKpiLabel = kpiFilter ? `<div class="filter-strip visible">
+    <span>🔍 KPI filter: <strong>${kpiFilter.label}</strong> — showing ${d.length} items</span>
+    <button onclick="clearAllFilters()">✕</button>
+  </div>` : '';
+
+  document.getElementById('tab-exec').innerHTML = `
+    ${mismatches > 0 ? `<div class="stage-notice">
+      ⚠️ <strong>${mismatches} items</strong> have a manually-entered "Current Stage" that doesn't match what their filled data suggests (auto-detect discrepancy).
+      To auto-detect stages in column AY, use:<br>
+      <code>=IF(AX4="Settled","Completed",IF(AQ4&lt;&gt;"","Settlement Stage",IF(AN4&lt;&gt;"","Settlement Stage",IF(AJ4&lt;&gt;"","Delivery Stage",IF(AF4&lt;&gt;"","GM / Payment Approval",IF(V4&lt;&gt;"","Evaluation Stage","Collection Stage"))))))</code>
+    </div>` : ''}
+    ${activeChartLabel}${activeKpiLabel}
+
     <div class="kpi-row">
-      <div class="kpi-card${kc("")}" onclick="openModal('All Items ('+filtered.length+')',['ID','PR No','Item','Dept','Stage','Spend (VAT)','Status'],filtered.map(r=>[esc(r.row_id),esc(r.pr_no),esc(r.item),esc(r.dept),esc(r.stage),etb(r.total_etb),bg(r.sett_status,r.is_settled?'sett':'pend')]))">
-        <div class="kpi-label">Total Line Items</div><div class="kpi-value">${tot}</div><div class="kpi-sub">${prs} Purchase Requests</div>
+      <div class="kpi-card${kpiClass('')}" onclick="openModal('All Line Items',${total},['ID','PR No','Item','Dept','Stage','Spend (VAT)','Status'],filteredData.map(r=>[esc(r.row_id),esc(r.pr_no),esc(r.item),esc(r.dept),esc(r.stage),etb(r.total_etb),badge(r.sett_status,r.is_settled?'settled':'pending')]))">
+        <div class="kpi-label">Total Line Items</div>
+        <div class="kpi-value">${total}</div>
+        <div class="kpi-sub">${[...new Set(d.map(r=>r.pr_no).filter(Boolean))].length} Purchase Requests</div>
       </div>
-      <div class="kpi-card amber${kc("amber")}" onclick="setKF('notsett','Unsettled Items')">
-        <div class="kpi-label">Committed Spend (incl. VAT)</div><div class="kpi-value">${etb(tvat)}</div><div class="kpi-sub">Settled: ${etb(svat)}</div>
+      <div class="kpi-card amber${kpiClass('notsett',' amber')}" onclick="setKpiFilter('notsett','Unsettled Items')">
+        <div class="kpi-label">Committed Spend (incl. VAT)</div>
+        <div class="kpi-value">${etb(totalSpend)}</div>
+        <div class="kpi-sub">Settled: ${etb(settSpend)}</div>
       </div>
-      <div class="kpi-card moss${kc("moss")}" onclick="setKF('sett','Settled Items')">
-        <div class="kpi-label">Settlement Rate</div><div class="kpi-value">${pctS}%</div><div class="kpi-sub">${sett.length} of ${tot} items settled</div>
+      <div class="kpi-card moss${kpiClass('settled',' moss')}" onclick="setKpiFilter('settled','Settled Items')">
+        <div class="kpi-label">Settlement Rate</div>
+        <div class="kpi-value">${pctSett}%</div>
+        <div class="kpi-sub">${settled.length} of ${total} items settled</div>
       </div>
-      <div class="kpi-card red${kc("red")}" onclick="setKF('delayed','Delayed Items')">
-        <div class="kpi-label">Delayed Items (Active)</div><div class="kpi-value">${del}</div><div class="kpi-sub">Negative variance, not settled</div>
+      <div class="kpi-card red${kpiClass('delayed',' red')}" onclick="setKpiFilter('delayed','Delayed Items — Active')">
+        <div class="kpi-label">Delayed Items</div>
+        <div class="kpi-value">${delayed}</div>
+        <div class="kpi-sub">Active, negative variance</div>
       </div>
     </div>
+
     <div class="kpi-row">
-      <div class="kpi-card red${kc("red")}" onclick="setKF('urgent','Urgent Open Items')">
-        <div class="kpi-label">Urgent Open</div><div class="kpi-value">${urg}</div><div class="kpi-sub">URGENT priority, not settled</div>
+      <div class="kpi-card red${kpiClass('urgent',' red')}" onclick="setKpiFilter('urgent','Urgent Items — Open')">
+        <div class="kpi-label">Urgent Open</div>
+        <div class="kpi-value">${openUrgent}</div>
+        <div class="kpi-sub">Priority = URGENT, not settled</div>
       </div>
-      <div class="kpi-card amber${kc("amber")}" onclick="setKF('gm','Pending GM Approval')">
-        <div class="kpi-label">Pending GM Approval</div><div class="kpi-value">${gm}</div><div class="kpi-sub">Awaiting payment release</div>
+      <div class="kpi-card amber${kpiClass('gm',' amber')}" onclick="setKpiFilter('gm','Pending GM Approval')">
+        <div class="kpi-label">Pending GM Approval</div>
+        <div class="kpi-value">${gmPend}</div>
+        <div class="kpi-sub">Awaiting payment release</div>
       </div>
-      <div class="kpi-card red${kc("red")}" onclick="setKF('fail','3-Way Match Failures')">
-        <div class="kpi-label">3-Way Match Failures</div><div class="kpi-value">${mf}</div><div class="kpi-sub">PO / GRN / Invoice mismatch</div>
+      <div class="kpi-card red${kpiClass('matchfail',' red')}" onclick="setKpiFilter('matchfail','3-Way Match Failures')">
+        <div class="kpi-label">3-Way Match Failures</div>
+        <div class="kpi-value">${matchFail}</div>
+        <div class="kpi-sub">PO / GRN / Invoice mismatch</div>
       </div>
-      <div class="kpi-card hem${kc("hem")}" onclick="setKF('vouch','Missing Voucher Numbers')">
-        <div class="kpi-label">Missing Vouchers</div><div class="kpi-value">${nv}</div><div class="kpi-sub">In settlement/completed stage</div>
+      <div class="kpi-card hem${kpiClass('novouch',' hem')}" onclick="setKpiFilter('novouch','Missing Voucher Numbers')">
+        <div class="kpi-label">Missing Vouchers</div>
+        <div class="kpi-value">${noVoucher}</div>
+        <div class="kpi-sub">In settlement/completed stage</div>
       </div>
     </div>
-    <div class="sec">Procurement Pipeline by Stage <span class="sec-n">Click a stage to cross-filter</span></div>
-    <div class="pipeline">${STAGES.map(s=>{const cnt=sc[s]||0;const pct=tot?Math.round(cnt/tot*100):0;const c=SCOL[s];const short=s.replace(" Stage","").replace(" / Payment Approval","");const isAF=chFlt&&chFlt.field==="stage"&&chFlt.value===s;return`<div class="pipe-stage${isAF?" af":""}" style="border-top-color:${c}" onclick="setCF('stage','${s}','Stage: ${s}')"><div class="pipe-count" style="color:${c}">${cnt}</div><div class="pipe-label">${short}</div><div class="pipe-pct">${pct}%</div></div>`;}).join("")}</div>
+
+    <div class="sec">Procurement Pipeline by Stage <span class="sec-count">Click stage to cross-filter</span></div>
+    <div class="pipeline">
+      ${STAGE_ORDER.map(s=>{
+        const cnt=stageCounts[s]||0, pct=total?Math.round(cnt/total*100):0;
+        const isActive = chartFilter && chartFilter.field==='stage' && chartFilter.value===s;
+        return `<div class="pipe-stage${isActive?' active-stage':''}" style="border-top-color:${STAGE_COLORS[s]}" onclick="setChartFilter('stage','${s}','Stage: ${s}')">
+          <div class="pipe-count" style="color:${STAGE_COLORS[s]}">${cnt}</div>
+          <div class="pipe-label">${s.replace(' Stage','').replace(' / Payment Approval','')}</div>
+          <div class="pipe-pct">${pct}%</div>
+        </div>`;
+      }).join('')}
+    </div>
+
     <div class="chart-grid">
-      <div class="chart-card"><div class="chart-title">Items per Stage <small>click bar to filter</small></div><div style="height:220px"><canvas id="ch-stg"></canvas></div></div>
-      <div class="chart-card"><div class="chart-title">Committed Spend by Dept (ETB incl. VAT) <small>click to filter</small></div><div style="height:220px"><canvas id="ch-dep"></canvas></div></div>
-    </div>`;
+      <div class="chart-card">
+        <div class="chart-title">Items per Stage <small>click bar to cross-filter</small></div>
+        <div class="chart-wrap" style="height:220px"><canvas id="ch-stage-bar"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Committed Spend by Department (ETB) <small>click to filter</small></div>
+        <div class="chart-wrap" style="height:220px"><canvas id="ch-dept-pie"></canvas></div>
+      </div>
+    </div>
+
+    <div id="kpi-drilldown"></div>`;
+
   setTimeout(()=>{
-    barC("ch-stg",STAGES.map(s=>s.replace(" Stage","").replace(" / Payment Approval","\n/Approv")),STAGES.map(s=>sc[s]||0),STAGES.map(s=>SCOL[s]),{lbl:v=>v||"",click:(e,els)=>{if(els.length){const s=STAGES[els[0].index];setCF("stage",s,"Stage: "+s);}}});
-    pieC("ch-dep",depts.map(([k])=>k),depts.map(([,v])=>Math.round(v)),PAL,{click:(e,els)=>{if(els.length){const dep=depts[els[0].index][0];setCF("dept",dep,"Dept: "+dep);}}});
-  },60);
-  if(kpiFlt){setTimeout(renderKpiDD,80);}
+    barChart('ch-stage-bar',
+      STAGE_ORDER.map(s=>s.replace(' Stage','').replace(' / Payment Approval','\n/Approval')),
+      STAGE_ORDER.map(s=>stageCounts[s]||0),
+      STAGE_ORDER.map(s=>STAGE_COLORS[s]),
+      {
+        lblFmt: v => v||'',
+        onClick: (e,els)=>{ if(els.length){ const s=STAGE_ORDER[els[0].index]; setChartFilter('stage',s,'Stage: '+s); } }
+      }
+    );
+    pieChart('ch-dept-pie',
+      depts.map(([k])=>k),
+      depts.map(([,v])=>Math.round(v)),
+      PALETTE,
+      {
+        tipFmt: v=>etb(v),
+        onClick: (e,els)=>{ if(els.length){ const dep=depts[els[0].index][0]; setChartFilter('dept',dep,'Dept: '+dep); } }
+      }
+    );
+  },50);
+
+  // KPI drill-down table
+  if(kpiFilter) { setTimeout(renderKpiDrilldown, 80); }
 }
-function renderKpiDD(){
-  const d=filtered;const tab=document.getElementById("tab-exec");
-  let el=document.getElementById("kpi-dd");if(el)el.remove();
-  const H=["ID","PR No","Item","Dept","Priority","Stage","Supplier","Spend (VAT)","Variance","Status","Remarks"];
-  let rows=[];
-  if(kpiFlt.field==="urgent")rows=d.filter(r=>r.is_urgent&&!r.is_settled).map(r=>[esc(r.row_id),esc(r.pr_no),esc(r.item),esc(r.dept),bg("URGENT","urg"),esc(r.stage),esc(r.supplier),etb(r.total_etb),"\u2014",bg(r.sett_status,"pend"),esc(r.remarks)]);
-  else if(kpiFlt.field==="delayed")rows=d.filter(r=>r.is_delayed&&!r.is_settled).map(r=>[esc(r.row_id),esc(r.pr_no),esc(r.item),esc(r.dept),r.is_urgent?bg("URGENT","urg"):bg("STD","std"),esc(r.stage),esc(r.supplier),etb(r.total_etb),vl(r.coll_var!==null?r.coll_var:r.eval_var),bg(r.sett_status,"pend"),esc(r.remarks)]);
-  else if(kpiFlt.field==="gm")rows=d.filter(r=>r.stage==="GM / Payment Approval").map(r=>[esc(r.row_id),esc(r.pr_no),esc(r.item),esc(r.dept),r.is_urgent?bg("URGENT","urg"):bg("STD","std"),"GM Approval",esc(r.supplier),etb(r.total_etb),vl(r.pay_var),bg(r.sett_status,"pend"),esc(r.remarks)]);
-  else if(kpiFlt.field==="fail")rows=d.filter(r=>r.match_r==="FAIL").map(r=>[esc(r.row_id),esc(r.pr_no),esc(r.item),esc(r.dept),"\u2014",esc(r.stage),esc(r.supplier),etb(r.total_etb),"\u2014",bg("FAIL","fail"),esc(r.remarks)]);
-  else if(kpiFlt.field==="vouch")rows=d.filter(r=>["Settlement Stage","Completed"].includes(r.stage)&&!r.has_voucher).map(r=>[esc(r.row_id),esc(r.pr_no),esc(r.item),esc(r.dept),"\u2014",esc(r.stage),esc(r.supplier),etb(r.total_etb),"\u2014",bg("MISSING","fail"),esc(r.remarks)]);
-  else if(kpiFlt.field==="sett")rows=d.filter(r=>r.is_settled).map(r=>[esc(r.row_id),esc(r.pr_no),esc(r.item),esc(r.dept),"\u2014",esc(r.stage),esc(r.supplier),etb(r.total_etb),"\u2014",bg("Settled","sett"),esc(r.remarks)]);
-  else if(kpiFlt.field==="notsett")rows=d.filter(r=>!r.is_settled).map(r=>[esc(r.row_id),esc(r.pr_no),esc(r.item),esc(r.dept),r.is_urgent?bg("URGENT","urg"):bg("STD","std"),esc(r.stage),esc(r.supplier),etb(r.total_etb),"\u2014",bg(r.sett_status,"pend"),esc(r.remarks)]);
-  const div=document.createElement("div");div.id="kpi-dd";
-  div.innerHTML=`<div class="sec">${kpiFlt.label} &mdash; ${rows.length} items</div><div class="tbl-wrap"><div class="tbl-head">${kpiFlt.label}</div>${tbl(H,rows)}</div>`;
-  tab.appendChild(div);
+
+function renderKpiDrilldown() {
+  const d = filteredData;
+  const dd = document.getElementById('kpi-drilldown');
+  if(!dd) return;
+  const H = ['ID','PR No','Item','Dept','Priority','Stage','Supplier','Spend (VAT)','Var','Status','Remarks'];
+  let rows = [];
+  const f = kpiFilter.field;
+
+  if(f==='urgent')    rows=d.filter(r=>r.is_urgent&&!r.is_settled).map(r=>[esc(r.row_id),esc(r.pr_no),esc(r.item),esc(r.dept),badge('URGENT','urgent'),esc(r.stage),esc(r.supplier),etb(r.total_etb),'—',badge(r.sett_status,'pending'),esc(r.remarks)||'—']);
+  else if(f==='delayed')   rows=d.filter(r=>r.is_delayed&&!r.is_settled).map(r=>[esc(r.row_id),esc(r.pr_no),esc(r.item),esc(r.dept),r.is_urgent?badge('URGENT','urgent'):badge('STD','std'),esc(r.stage),esc(r.supplier),etb(r.total_etb),varLabel(r.coll_var!==null?r.coll_var:r.eval_var),badge(r.sett_status,'pending'),esc(r.remarks)||'—']);
+  else if(f==='gm')        rows=d.filter(r=>r.stage==='GM / Payment Approval').map(r=>[esc(r.row_id),esc(r.pr_no),esc(r.item),esc(r.dept),r.is_urgent?badge('URGENT','urgent'):badge('STD','std'),'GM Approval',esc(r.supplier),etb(r.total_etb),varLabel(r.pay_var),badge(r.sett_status,'pending'),esc(r.remarks)||'—']);
+  else if(f==='matchfail') rows=d.filter(r=>r.match==='FAIL').map(r=>[esc(r.row_id),esc(r.pr_no),esc(r.item),esc(r.dept),'—',esc(r.stage),esc(r.supplier),etb(r.total_etb),'—',badge('FAIL','fail'),esc(r.remarks)||'—']);
+  else if(f==='novouch')   rows=d.filter(r=>['Settlement Stage','Completed'].includes(r.stage)&&!r.has_voucher).map(r=>[esc(r.row_id),esc(r.pr_no),esc(r.item),esc(r.dept),'—',esc(r.stage),esc(r.supplier),etb(r.total_etb),'—',badge('MISSING','fail'),esc(r.remarks)||'—']);
+  else if(f==='settled')   rows=d.filter(r=>r.is_settled).map(r=>[esc(r.row_id),esc(r.pr_no),esc(r.item),esc(r.dept),'—',esc(r.stage),esc(r.supplier),etb(r.total_etb),'—',badge('Settled','settled'),esc(r.remarks)||'—']);
+  else if(f==='notsett')   rows=d.filter(r=>!r.is_settled).map(r=>[esc(r.row_id),esc(r.pr_no),esc(r.item),esc(r.dept),r.is_urgent?badge('URGENT','urgent'):badge('STD','std'),esc(r.stage),esc(r.supplier),etb(r.total_etb),'—',badge(r.sett_status,'pending'),esc(r.remarks)||'—']);
+
+  dd.innerHTML = `
+    <div class="sec">${kpiFilter.label} <span class="sec-count">${rows.length} items</span></div>
+    <div class="tbl-wrap">
+      <div class="tbl-head">${kpiFilter.label} <small style="font-weight:400;color:var(--mt)">${rows.length} items</small></div>
+      ${buildTable(H, rows)}
+    </div>`;
 }
-function renderOps(){
-  const d=filtered;
-  const urg=d.filter(r=>r.is_urgent&&!r.is_settled);
-  const del=d.filter(r=>r.is_delayed&&!r.is_settled);
-  const gm=d.filter(r=>r.stage==="GM / Payment Approval");
-  document.getElementById("tab-ops").innerHTML=`
-    <div class="sec" style="color:var(--red);border-bottom-color:var(--red)">&#128680; Urgent Items Open <span class="sec-n">${urg.length} items</span></div>
-    <div class="tbl-wrap"><div class="tbl-head">URGENT priority, not settled (${urg.length})</div>${tbl(["ID","PR No","Item","Dept","Stage","Coll Officer","Spend (VAT)","Coll Var","Eval Var","Remarks"],urg.map(r=>[esc(r.row_id),esc(r.pr_no),esc(r.item),esc(r.dept),esc(r.stage),esc(r.coll_off),etb(r.total_etb),vl(r.coll_var),vl(r.eval_var),esc(r.remarks)||"\u2014"]),"&#9989; No open urgent items.")}</div>
-    <div class="sec" style="color:var(--amber);border-bottom-color:var(--amber)">&#9888;&#65039; Delayed Items Active <span class="sec-n">${del.length} items</span></div>
-    <div class="tbl-wrap"><div class="tbl-head">Negative variance, not settled (${del.length})</div>${tbl(["ID","Item","Dept","Priority","Stage","Coll Var","Eval Var","Coll Officer","Eval Officer"],del.map(r=>[esc(r.row_id),esc(r.item),esc(r.dept),r.is_urgent?bg("URGENT","urg"):bg("STD","std"),esc(r.stage),vl(r.coll_var),vl(r.eval_var),esc(r.coll_off),esc(r.eval_off)]),"&#9989; No active delayed items.")}</div>
-    <div class="sec">&#128272; Pending GM / Payment Approval <span class="sec-n">${gm.length} items</span></div>
-    <div class="tbl-wrap"><div class="tbl-head">Awaiting GM sign-off (${gm.length})</div>${tbl(["ID","PR No","Item","Dept","Supplier","Spend (VAT)","Pay Term","# Proformas","CPV Date"],gm.map(r=>[esc(r.row_id),esc(r.pr_no),esc(r.item),esc(r.dept),esc(r.supplier),etb(r.total_etb),esc(r.pay_term),r.proformas||"\u2014",r.cpv_date||"\u2014"]),"&#9989; No items pending GM approval.")}</div>`;
+
+// ═════════════════════════════════════════════════════════════════════════════
+// TAB 2: OPERATIONS
+// ═════════════════════════════════════════════════════════════════════════════
+function renderOps() {
+  const d = filteredData;
+  const urgent  = d.filter(r=>r.is_urgent&&!r.is_settled);
+  const delayed = d.filter(r=>r.is_delayed&&!r.is_settled);
+  const gm      = d.filter(r=>r.stage==='GM / Payment Approval');
+
+  document.getElementById('tab-ops').innerHTML = `
+    <div class="sec" style="color:var(--red);border-bottom-color:var(--red)">🚨 Urgent Items — Open <span class="sec-count">${urgent.length} items</span></div>
+    <div class="tbl-wrap">
+      <div class="tbl-head">URGENT priority, not yet settled (${urgent.length})</div>
+      ${buildTable(
+        ['ID','PR No','Item','Dept','Stage','Coll Officer','Spend (VAT)','Coll Var','Eval Var','Remarks'],
+        urgent.map(r=>[esc(r.row_id),esc(r.pr_no),esc(r.item),esc(r.dept),esc(r.stage),esc(r.coll_off),etb(r.total_etb),varLabel(r.coll_var),varLabel(r.eval_var),esc(r.remarks)||'—']),
+        '✅ No open urgent items — all clear.'
+      )}
+    </div>
+
+    <div class="sec" style="color:var(--amber);border-bottom-color:var(--amber)">⚠️ Delayed Items — Active <span class="sec-count">${delayed.length} items</span></div>
+    <div class="tbl-wrap">
+      <div class="tbl-head">Items with negative variance, not settled (${delayed.length})</div>
+      ${buildTable(
+        ['ID','Item','Dept','Priority','Stage','Coll Var','Eval Var','Coll Officer','Eval Officer'],
+        delayed.map(r=>[esc(r.row_id),esc(r.item),esc(r.dept),r.is_urgent?badge('URGENT','urgent'):badge('STD','std'),esc(r.stage),varLabel(r.coll_var),varLabel(r.eval_var),esc(r.coll_off),esc(r.eval_off)]),
+        '✅ No active delayed items.'
+      )}
+    </div>
+
+    <div class="sec">🔐 Pending GM / Payment Approval <span class="sec-count">${gm.length} items</span></div>
+    <div class="tbl-wrap">
+      <div class="tbl-head">Items awaiting GM sign-off (${gm.length})</div>
+      ${buildTable(
+        ['ID','PR No','Item','Dept','Supplier','Spend (VAT)','Pay Term','# Proformas','CPV Date'],
+        gm.map(r=>[esc(r.row_id),esc(r.pr_no),esc(r.item),esc(r.dept),esc(r.supplier),etb(r.total_etb),esc(r.pay_term)||'—',r.proformas||'—',r.cpv_date||'—']),
+        '✅ No items pending GM approval.'
+      )}
+    </div>`;
 }
-function renderPeople(){
-  const d=filtered;
-  const bc=grp(d.filter(r=>r.coll_off),"coll_off");
-  const be=grp(d.filter(r=>r.eval_off),"eval_off");
-  const cs=Object.entries(bc).map(([o,rows])=>({o,cnt:rows.length,acv:avgF(rows,"coll_var"),sett:rows.filter(r=>r.is_settled).length,ot:rows.filter(r=>r.coll_var!==null&&r.coll_var>=0).length,spd:sumF(rows,"total_etb")})).sort((a,b)=>b.cnt-a.cnt);
-  const es=Object.entries(be).map(([o,rows])=>({o,cnt:rows.length,aev:avgF(rows,"eval_var"),adl:avgF(rows,"eval_delay")})).sort((a,b)=>b.cnt-a.cnt);
-  document.getElementById("tab-people").innerHTML=`
+
+// ═════════════════════════════════════════════════════════════════════════════
+// TAB 3: PEOPLE
+// ═════════════════════════════════════════════════════════════════════════════
+function renderPeople() {
+  const d = filteredData;
+  const byCollOff = groupBy(d.filter(r=>r.coll_off),'coll_off');
+  const byEvalOff = groupBy(d.filter(r=>r.eval_off),'eval_off');
+  const collStats = Object.entries(byCollOff).map(([o,rows])=>({
+    officer:o, count:rows.length,
+    avg_cv: avgBy(rows,'coll_var'),
+    settled: rows.filter(r=>r.is_settled).length,
+    on_time: rows.filter(r=>r.coll_var!==null&&r.coll_var>=0).length,
+    spend: sumBy(rows,'total_etb'),
+  })).sort((a,b)=>b.count-a.count);
+  const evalStats = Object.entries(byEvalOff).map(([o,rows])=>({
+    officer:o, count:rows.length,
+    avg_ev: avgBy(rows,'eval_var'),
+    avg_dl: avgBy(rows,'eval_delay'),
+  })).sort((a,b)=>b.count-a.count);
+
+  const ch = Math.max(180, collStats.length*44);
+  const eh = Math.max(180, evalStats.length*44);
+  document.getElementById('tab-people').innerHTML = `
     <div class="sec">Collection Officer Performance</div>
     <div class="chart-grid">
-      <div class="chart-card"><div class="chart-title">Avg Collection Variance <small>(+ ahead, \u2013 delayed)</small></div><div style="height:${Math.max(180,cs.length*52)}px"><canvas id="ch-cv"></canvas></div></div>
-      <div class="chart-card"><div class="chart-title">Items Handled per Officer</div><div style="height:${Math.max(180,cs.length*52)}px"><canvas id="ch-cc"></canvas></div></div>
-    </div>
-    <div class="tbl-wrap"><div class="tbl-head">Collection Officer Summary</div>${tbl(["Officer","Items","Avg Coll Var","On-Time Rate","Settled","Spend (VAT)"],cs.map(r=>[esc(r.o),r.cnt,vl(r.acv!=null?Math.round(r.acv*10)/10:null),r.cnt?Math.round(r.ot/r.cnt*100)+"%":"\u2014",r.sett,etb(r.spd)]))}</div>
-    <div class="sec">Evaluation Officer Performance</div>
-    <div class="chart-grid">
-      <div class="chart-card"><div class="chart-title">Avg Evaluation Variance <small>(+ ahead, \u2013 delayed)</small></div><div style="height:${Math.max(180,es.length*52)}px"><canvas id="ch-ev"></canvas></div></div>
-      <div class="chart-card"><div class="chart-title">Evaluator Own Delayance <small>(+ faster, \u2013 slower)</small></div><div style="height:${Math.max(180,es.length*52)}px"><canvas id="ch-ed"></canvas></div></div>
-    </div>
-    <div class="tbl-wrap"><div class="tbl-head">Evaluation Officer Summary</div>${tbl(["Officer","Items Evaluated","Avg Eval Variance","Own Delayance"],es.map(r=>[esc(r.o),r.cnt,vl(r.aev!=null?Math.round(r.aev*10)/10:null),vl(r.adl!=null?Math.round(r.adl*10)/10:null)]))}</div>`;
-  setTimeout(()=>{
-    varC("ch-cv",cs.map(r=>r.o),cs.map(r=>r.acv!=null?Math.round(r.acv*10)/10:null));
-    barC("ch-cc",cs.map(r=>r.o),cs.map(r=>r.cnt),"#386A59",{h:true,lbl:v=>v});
-    varC("ch-ev",es.map(r=>r.o),es.map(r=>r.aev!=null?Math.round(r.aev*10)/10:null));
-    varC("ch-ed",es.map(r=>r.o),es.map(r=>r.adl!=null?Math.round(r.adl*10)/10:null));
-  },60);
-}
-function renderSuppliers(){
-  const d=filtered.filter(r=>r.supplier);
-  if(!d.length){document.getElementById("tab-suppliers").innerHTML='<div class="empty-s" style="margin-top:60px"><div class="ico">&#127981;</div>No supplier data visible with current filters.</div>';return;}
-  const bs=grp(d,"supplier");
-  const stats=Object.entries(bs).map(([s,rows])=>({s,ord:rows.length,spd:sumF(rows,"total_etb"),adv:avgF(rows,"del_var"),rej:sumF(rows,"qty_rej"),sett:rows.filter(r=>r.is_settled).length,deps:[...new Set(rows.map(r=>r.dept).filter(Boolean))].join(", ")})).sort((a,b)=>b.spd-a.spd);
-  const top8=stats.slice(0,8);const rejs=stats.filter(r=>r.rej>0).sort((a,b)=>b.rej-a.rej);
-  const sh=s=>s&&s.length>24?s.slice(0,24)+"\u2026":s;
-  document.getElementById("tab-suppliers").innerHTML=`
-    <div class="sec">Top Suppliers by Committed Spend (incl. VAT)</div>
-    <div class="chart-grid">
-      <div class="chart-card"><div class="chart-title">Total Spend ETB \u2014 Top 8 <small>click to filter</small></div><div style="height:280px"><canvas id="ch-ss"></canvas></div></div>
-      <div class="chart-card"><div class="chart-title">Avg Delivery Variance <small>(+ ahead, \u2013 delayed)</small></div><div style="height:280px"><canvas id="ch-sd"></canvas></div></div>
-    </div>
-    ${rejs.length?`<div class="sec">QC Rejections by Supplier</div><div class="chart-grid single"><div class="chart-card"><div class="chart-title">Total Quantity Rejected at QC</div><div style="height:180px"><canvas id="ch-sr"></canvas></div></div></div>`:""}
-    <div class="sec">Supplier Settlement Performance</div>
-    <div class="chart-grid">
-      <div class="chart-card"><div class="chart-title">Settled vs Pending Orders per Supplier</div><div style="height:260px"><canvas id="ch-sp"></canvas></div></div>
-      <div class="chart-card"><div class="chart-title">Orders per Supplier</div><div style="height:260px"><canvas id="ch-so"></canvas></div></div>
-    </div>
-    <div class="sec">Full Supplier Register</div>
-    <div class="tbl-wrap">${tbl(["Supplier","# Orders","Total Spend (VAT)","Avg Del Var","QC Rejections","Settled","Departments"],stats.map(r=>[esc(r.s),r.ord,etb(r.spd),vl(r.adv!=null?Math.round(r.adv*10)/10:null),r.rej||0,r.sett,esc(r.deps)]))}</div>`;
-  setTimeout(()=>{
-    barC("ch-ss",top8.map(r=>sh(r.s)),top8.map(r=>Math.round(r.spd)),top8.map((_,i)=>PAL[i%PAL.length]),{h:true,lbl:v=>etb(v),tip:v=>etb(v),click:(e,els)=>{if(els.length){const s=top8[els[0].index].s;setCF("supplier",s,"Supplier: "+sh(s));}}});
-    const dd=stats.filter(r=>r.adv!=null).slice(0,10);varC("ch-sd",dd.map(r=>sh(r.s)),dd.map(r=>Math.round(r.adv*10)/10));
-    if(rejs.length)barC("ch-sr",rejs.map(r=>sh(r.s)),rejs.map(r=>r.rej),"#C0392B",{lbl:v=>v.toLocaleString()});
-    kill("ch-sp");const ctx=document.getElementById("ch-sp");
-    if(ctx)charts["ch-sp"]=new Chart(ctx,{type:"bar",data:{labels:top8.map(r=>sh(r.s)),datasets:[{label:"Settled",data:top8.map(r=>r.sett),backgroundColor:"#719A58",borderRadius:3},{label:"Pending",data:top8.map(r=>r.ord-r.sett),backgroundColor:"#F5ECD9",borderRadius:3}]},options:{...BO,indexAxis:"y",plugins:{...BO.plugins,legend:{display:true,position:"bottom",labels:{font:{family:"Montserrat",size:10}}},datalabels:{display:false}}}});
-    barC("ch-so",stats.slice(0,8).map(r=>sh(r.s)),stats.slice(0,8).map(r=>r.ord),stats.slice(0,8).map((_,i)=>PAL[i%PAL.length]),{h:true,lbl:v=>v});
-  },60);
-}
-function renderCycle(){
-  const d=filtered;const wct=d.filter(r=>r.cycle_time>0);const wlt=d.filter(r=>r.lead_time>0);
-  const act=wct.length?Math.round(avgF(wct,"cycle_time")):null;
-  const alt=wlt.length?Math.round(avgF(wlt,"lead_time")):null;
-  const mct=wct.length?Math.max(...wct.map(r=>r.cycle_time)):null;
-  const byd=Object.entries(grp(wct,"dept")).map(([dep,rows])=>({dep,avg:Math.round(avgF(rows,"cycle_time"))})).sort((a,b)=>b.avg-a.avg);
-  const bym=Object.entries(grp(d.filter(r=>r.cycle_time>0),"method")).map(([m,rows])=>({m,avg:Math.round(avgF(rows,"cycle_time"))})).filter(r=>r.m).sort((a,b)=>b.avg-a.avg);
-  const cv=wct.map(r=>r.cycle_time).filter(v=>v>0&&v<400);
-  const bsz=15;const hist={};cv.forEach(v=>{const b=Math.floor(v/bsz)*bsz;hist[b]=(hist[b]||0)+1;});
-  const hk=Object.keys(hist).map(Number).sort((a,b)=>a-b);
-  document.getElementById("tab-cycle").innerHTML=`
-    <div class="kpi-row">
-      <div class="kpi-card"><div class="kpi-label">Avg Total Cycle Time</div><div class="kpi-value">${act!=null?act+"d":"\u2014"}</div><div class="kpi-sub">PR received &#8594; settlement</div></div>
-      <div class="kpi-card amber"><div class="kpi-label">Avg Lead Time</div><div class="kpi-value">${alt!=null?alt+"d":"\u2014"}</div><div class="kpi-sub">PR received &#8594; delivered</div></div>
-      <div class="kpi-card red"><div class="kpi-label">Longest Cycle</div><div class="kpi-value">${mct!=null?mct+"d":"\u2014"}</div><div class="kpi-sub">Slowest item to settle</div></div>
-      <div class="kpi-card moss"><div class="kpi-label">Fully Cycled Items</div><div class="kpi-value">${wct.length}</div><div class="kpi-sub">Reached settlement</div></div>
-    </div>
-    <div class="chart-grid">
-      <div class="chart-card"><div class="chart-title">Cycle Time Distribution</div><div style="height:220px"><canvas id="ch-ch"></canvas></div><div class="chart-note">Each bar = items that settled within that day range</div></div>
-      <div class="chart-card"><div class="chart-title">Avg Cycle Time by Department</div><div style="height:220px"><canvas id="ch-cd"></canvas></div></div>
-    </div>
-    <div class="chart-grid">
-      <div class="chart-card"><div class="chart-title">Avg Cycle Time by Procurement Method</div><div style="height:180px"><canvas id="ch-cm"></canvas></div></div>
-      <div class="chart-card"><div class="chart-title">Settled vs In-Progress</div><div style="height:180px"><canvas id="ch-cs"></canvas></div></div>
-    </div>
-    <div class="sec">Longest Cycle Time Items (Top 10)</div>
-    <div class="tbl-wrap">${tbl(["ID","Item","Dept","Method","Cycle (d)","Lead (d)","Stage","Status"],[...wct].sort((a,b)=>b.cycle_time-a.cycle_time).slice(0,10).map(r=>[esc(r.row_id),esc(r.item),esc(r.dept),esc(r.method),`<strong>${Math.round(r.cycle_time)}</strong>`,r.lead_time?Math.round(r.lead_time):"\u2014",esc(r.stage),bg(r.sett_status,r.is_settled?"sett":"pend")]))}</div>`;
-  setTimeout(()=>{
-    if(hk.length){kill("ch-ch");const ctx=document.getElementById("ch-ch");if(ctx)charts["ch-ch"]=new Chart(ctx,{type:"bar",data:{labels:hk.map(b=>`${b}\u2013${b+bsz}d`),datasets:[{data:hk.map(b=>hist[b]),backgroundColor:"#386A59",borderRadius:3}]},options:{...BO,plugins:{...BO.plugins,datalabels:{display:true,anchor:"end",align:"top",color:"#1F2A26",font:{family:"Montserrat",size:9,weight:"600"},formatter:v=>v||""}}}});}
-    if(byd.length)barC("ch-cd",byd.map(r=>r.dep),byd.map(r=>r.avg),"#386A59",{h:true,lbl:v=>v+"d"});
-    if(bym.length)barC("ch-cm",bym.map(r=>r.m),bym.map(r=>r.avg),PAL,{lbl:v=>v+"d"});
-    pieC("ch-cs",["Settled","In Progress"],[wct.length,d.length-wct.length],["#719A58","#C2984D"]);
-  },60);
-}
-function renderFinance(){
-  const d=filtered;const tv=sumF(d,"total_etb");const sv=sumF(d.filter(r=>r.is_settled),"total_etb");const uv=sumF(d.filter(r=>r.is_urgent),"total_etb");
-  const byd=Object.entries(grp(d,"dept")).map(([k,v])=>({dep:k,tot:sumF(v,"total_etb"),cnt:v.length,sett:sumF(v.filter(r=>r.is_settled),"total_etb")})).filter(r=>r.tot>0).sort((a,b)=>b.tot-a.tot);
-  const byt=Object.entries(grp(d.filter(r=>r.pay_term),"pay_term")).map(([k,v])=>({term:k,tot:sumF(v,"total_etb"),cnt:v.length})).filter(r=>r.tot>0).sort((a,b)=>b.tot-a.tot);
-  const bys=Object.entries(grp(d.filter(r=>r.supplier),"supplier")).map(([k,v])=>({s:k,tot:sumF(v,"total_etb")})).filter(r=>r.tot>0).sort((a,b)=>b.tot-a.tot).slice(0,8);
-  document.getElementById("tab-finance").innerHTML=`
-    <div class="kpi-row">
-      <div class="kpi-card"><div class="kpi-label">Total Committed (incl. VAT)</div><div class="kpi-value">${etb(tv)}</div><div class="kpi-sub">All ${d.length} line items</div></div>
-      <div class="kpi-card moss"><div class="kpi-label">Settled Amount</div><div class="kpi-value">${etb(sv)}</div><div class="kpi-sub">${tv?Math.round(sv/tv*100):0}% of committed</div></div>
-      <div class="kpi-card amber"><div class="kpi-label">Outstanding</div><div class="kpi-value">${etb(tv-sv)}</div><div class="kpi-sub">Still to be settled</div></div>
-      <div class="kpi-card red"><div class="kpi-label">Urgent Items Value</div><div class="kpi-value">${etb(uv)}</div><div class="kpi-sub">At-risk spend</div></div>
-    </div>
-    <div class="chart-grid">
-      <div class="chart-card"><div class="chart-title">Spend by Department (ETB incl. VAT) <small>click to filter</small></div><div style="height:280px"><canvas id="ch-fd"></canvas></div></div>
-      <div class="chart-card"><div class="chart-title">Spend by Payment Term <small>Cash / Credit / Advance</small></div><div style="height:280px"><canvas id="ch-ft"></canvas></div></div>
-    </div>
-    <div class="chart-grid single"><div class="chart-card wide"><div class="chart-title">Top 8 Suppliers by Committed Spend</div><div style="height:220px"><canvas id="ch-fs"></canvas></div></div></div>
-    <div class="sec">Department Financial Register</div>
-    <div class="tbl-wrap">${tbl(["Department","Items","Total Committed (VAT)","Settled","Outstanding","% Settled"],byd.map(r=>[esc(r.dep),r.cnt,etb(r.tot),etb(r.sett),etb(r.tot-r.sett),r.tot?Math.round(r.sett/r.tot*100)+"%":"\u2014"]))}</div>`;
-  setTimeout(()=>{
-    barC("ch-fd",byd.map(r=>r.dep),byd.map(r=>Math.round(r.tot)),byd.map((_,i)=>PAL[i%PAL.length]),{lbl:v=>etb(v),tip:v=>etb(v),click:(e,els)=>{if(els.length){const dep=byd[els[0].index].dep;setCF("dept",dep,"Dept: "+dep);}}});
-    pieC("ch-ft",byt.map(r=>r.term),byt.map(r=>Math.round(r.tot)),["#386A59","#719A58","#C2984D","#675633","#2E86C1"],{click:(e,els)=>{if(els.length){const t=byt[els[0].index].term;setCF("pay_term",t,"Pay Term: "+t);}}});
-    const sh=s=>s&&s.length>22?s.slice(0,22)+"\u2026":s;
-    barC("ch-fs",bys.map(r=>sh(r.s)),bys.map(r=>Math.round(r.tot)),bys.map((_,i)=>PAL[i%PAL.length]),{lbl:v=>etb(v),tip:v=>etb(v)});
-  },60);
-}
-function renderAudit(){
-  const d=filtered;const sc=d.filter(r=>["Delivery Stage","Settlement Stage","Completed"].includes(r.stage));
-  const ps=sc.filter(r=>r.match_r==="PASS").length,fs=sc.filter(r=>r.match_r==="FAIL").length;
-  const nv=sc.filter(r=>!r.has_voucher).length,ifl=sc.filter(r=>(r.inv_match||"").toLowerCase()==="no").length;
-  const llf=sc.filter(r=>(r.legal_doc||"").toLowerCase()==="no").length,gf=sc.filter(r=>(r.grn_avail||"").toLowerCase()==="no").length;
-  const ex=sc.filter(r=>r.match_r==="FAIL"||!r.has_voucher||(r.inv_match||"").toLowerCase()==="no"||(r.legal_doc||"").toLowerCase()==="no");
-  const mg={};sc.forEach(r=>{const k=r.match_r||"\u2014";mg[k]=(mg[k]||0)+1;});
-  document.getElementById("tab-audit").innerHTML=`
-    <div class="kpi-row">
-      <div class="kpi-card"><div class="kpi-label">Audit Scope</div><div class="kpi-value">${sc.length}</div><div class="kpi-sub">Delivery + Settlement + Completed</div></div>
-      <div class="kpi-card moss"><div class="kpi-label">3-Way Match PASS</div><div class="kpi-value">${ps}</div><div class="kpi-sub">${sc.length?Math.round(ps/sc.length*100):0}% pass rate</div></div>
-      <div class="kpi-card red"><div class="kpi-label">3-Way Match FAIL</div><div class="kpi-value">${fs}</div><div class="kpi-sub">Requires resolution</div></div>
-      <div class="kpi-card hem"><div class="kpi-label">Missing Vouchers</div><div class="kpi-value">${nv}</div><div class="kpi-sub">Cannot be fully settled</div></div>
-    </div>
-    <div class="chart-grid">
-      <div class="chart-card"><div class="chart-title">3-Way Match Breakdown</div><div style="height:220px"><canvas id="ch-mp"></canvas></div></div>
-      <div class="chart-card"><div class="chart-title">Control Flag Summary</div>
-        <div style="padding:8px 0">${[["Invoice Amount Mismatch",ifl,"#C0392B"],["Invalid/Missing Legal Document",llf,"#C0392B"],["GRN Not Available",gf,"#D68910"],["Missing Voucher Number",nv,"#675633"]].map(([lbl,cnt,col])=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid #F0F4F0;font-size:12px"><span>${lbl}</span><span style="color:${cnt>0?col:"#719A58"};font-weight:700;font-size:16px;font-family:'JetBrains Mono',monospace">${cnt} <span style="color:#5E6B64;font-size:10px;font-weight:400">(${sc.length?Math.round(cnt/sc.length*100):0}%)</span></span></div>`).join("")}</div>
+      <div class="chart-card">
+        <div class="chart-title">Avg Collection Variance by Officer <small>(+ ahead, – delayed)</small></div>
+        <div class="chart-wrap" style="height:${ch}px"><canvas id="ch-coll-var"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Items Handled by Collection Officer</div>
+        <div class="chart-wrap" style="height:${ch}px"><canvas id="ch-coll-count"></canvas></div>
       </div>
     </div>
-    <div class="sec" style="color:var(--red);border-bottom-color:var(--red)">Settlement Exceptions \u2014 Action Required <span class="sec-n">${ex.length} items</span></div>
-    <div class="tbl-wrap"><div class="tbl-head">Items failing settlement controls (${ex.length})</div>${tbl(["ID","Item","Dept","Supplier","Amount (VAT)","PO","GRN","Voucher","Inv Match","Legal","GRN","3-Way","Status"],ex.map(r=>[esc(r.row_id),esc(r.item),esc(r.dept),esc(r.supplier),etb(r.total_etb),esc(r.po_no),esc(r.grn_no),r.has_voucher?esc(r.voucher):bg("MISSING","fail"),(r.inv_match||"").toLowerCase()==="yes"?bg("Yes","pass"):bg(r.inv_match||"\u2014","fail"),(r.legal_doc||"").toLowerCase()==="yes"?bg("Yes","pass"):bg(r.legal_doc||"\u2014","fail"),(r.grn_avail||"").toLowerCase()==="yes"?bg("Yes","pass"):bg(r.grn_avail||"\u2014","fail"),r.match_r==="PASS"?bg("PASS","pass"):r.match_r?bg(r.match_r,"fail"):bg("\u2014","pend"),bg(r.sett_status,r.is_settled?"sett":"pend")]),"&#9989; All items in scope have clean 3-way match records.")}</div>
-    <div class="sec">Full Settlement Register</div>
-    <div class="tbl-wrap">${tbl(["ID","Item","Dept","Supplier","Amount (VAT)","PO","GRN","Voucher","Sett Date","3-Way","Status"],sc.map(r=>[esc(r.row_id),esc(r.item),esc(r.dept),esc(r.supplier),etb(r.total_etb),esc(r.po_no),esc(r.grn_no),esc(r.voucher)||"\u2014",esc(r.sett_date)||"\u2014",r.match_r==="PASS"?bg("PASS","pass"):r.match_r==="FAIL"?bg("FAIL","fail"):bg(r.match_r||"\u2014","pend"),bg(r.sett_status,r.is_settled?"sett":"pend")]))}</div>`;
+    <div class="tbl-wrap">
+      <div class="tbl-head">Collection Officer Summary</div>
+      ${buildTable(
+        ['Officer','Items','Avg Coll Variance','On-Time Rate','Settled','Spend (VAT)'],
+        collStats.map(r=>[esc(r.officer),r.count,varLabel(r.avg_cv?Math.round(r.avg_cv*10)/10:null),r.count?Math.round(r.on_time/r.count*100)+'%':'—',r.settled,etb(r.spend)])
+      )}
+    </div>
+    <div class="sec">Evaluation Officer Performance</div>
+    <div class="chart-grid">
+      <div class="chart-card">
+        <div class="chart-title">Avg Evaluation Variance by Officer <small>(+ ahead, – delayed)</small></div>
+        <div class="chart-wrap" style="height:${eh}px"><canvas id="ch-eval-var"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Evaluator Own Delayance <small>(+ faster than gap, – slower)</small></div>
+        <div class="chart-wrap" style="height:${eh}px"><canvas id="ch-eval-delay"></canvas></div>
+      </div>
+    </div>
+    <div class="tbl-wrap">
+      <div class="tbl-head">Evaluation Officer Summary</div>
+      ${buildTable(
+        ['Officer','Items Evaluated','Avg Eval Variance','Evaluator Delayance'],
+        evalStats.map(r=>[esc(r.officer),r.count,varLabel(r.avg_ev?Math.round(r.avg_ev*10)/10:null),varLabel(r.avg_dl?Math.round(r.avg_dl*10)/10:null)])
+      )}
+    </div>`;
+
   setTimeout(()=>{
-    const labs=Object.keys(mg);const vals=Object.values(mg);
-    const cols=labs.map(l=>l==="PASS"?"#719A58":l==="FAIL"?"#C0392B":"#9BB8A8");
-    pieC("ch-mp",labs,vals,cols);
-  },60);
+    varBarChart('ch-coll-var',   collStats.map(r=>r.officer), collStats.map(r=>r.avg_cv?Math.round(r.avg_cv*10)/10:null));
+    barChart('ch-coll-count', collStats.map(r=>r.officer), collStats.map(r=>r.count), '#386A59', {horizontal:true, lblFmt:v=>v});
+    varBarChart('ch-eval-var',   evalStats.map(r=>r.officer), evalStats.map(r=>r.avg_ev?Math.round(r.avg_ev*10)/10:null));
+    varBarChart('ch-eval-delay', evalStats.map(r=>r.officer), evalStats.map(r=>r.avg_dl?Math.round(r.avg_dl*10)/10:null));
+  },50);
 }
+
+// ═════════════════════════════════════════════════════════════════════════════
+// TAB 4: SUPPLIERS
+// ═════════════════════════════════════════════════════════════════════════════
+function renderSuppliers() {
+  const d = filteredData.filter(r=>r.supplier);
+  if(!d.length) {
+    document.getElementById('tab-suppliers').innerHTML='<div class="empty-state" style="margin-top:80px"><div class="icon">🏭</div>No supplier data visible. Supplier Name column may be empty or filters too narrow.</div>';
+    return;
+  }
+  const byS = groupBy(d,'supplier');
+  const stats = Object.entries(byS).map(([sup,rows])=>({
+    supplier:sup, orders:rows.length,
+    total_etb: sumBy(rows,'total_etb'),
+    avg_del_var: avgBy(rows,'del_var'),
+    qty_rej: sumBy(rows,'qty_rej'),
+    settled: rows.filter(r=>r.is_settled).length,
+    depts: [...new Set(rows.map(r=>r.dept).filter(Boolean))].join(', '),
+  })).sort((a,b)=>b.total_etb-a.total_etb);
+
+  const top8    = stats.slice(0,8);
+  const rejects = stats.filter(r=>r.qty_rej>0).sort((a,b)=>b.qty_rej-a.qty_rej);
+  const sh = s => s && s.length>22 ? s.slice(0,22)+'…' : s;
+
+  document.getElementById('tab-suppliers').innerHTML = `
+    <div class="sec">Top Suppliers by Committed Spend (incl. VAT) <span class="sec-count">Click supplier to filter</span></div>
+    <div class="chart-grid">
+      <div class="chart-card">
+        <div class="chart-title">Total Spend (ETB) — Top 8 <small>click to cross-filter</small></div>
+        <div class="chart-wrap" style="height:300px"><canvas id="ch-sup-spend"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Avg Delivery Variance (+ Ahead, – Delayed)</div>
+        <div class="chart-wrap" style="height:300px"><canvas id="ch-sup-del"></canvas></div>
+      </div>
+    </div>
+    ${rejects.length ? `
+    <div class="sec">QC Rejections by Supplier</div>
+    <div class="chart-grid">
+      <div class="chart-card wide">
+        <div class="chart-title">Total Quantity Rejected at QC Inspection</div>
+        <div class="chart-wrap" style="height:200px"><canvas id="ch-sup-rej"></canvas></div>
+      </div>
+    </div>` : ''}
+    <div class="sec">Supplier Settlement Performance</div>
+    <div class="chart-grid">
+      <div class="chart-card">
+        <div class="chart-title">Settled vs Pending by Supplier</div>
+        <div class="chart-wrap" style="height:260px"><canvas id="ch-sup-sett"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Orders per Supplier — Top 8</div>
+        <div class="chart-wrap" style="height:260px"><canvas id="ch-sup-orders"></canvas></div>
+      </div>
+    </div>
+    <div class="sec">Full Supplier Register</div>
+    <div class="tbl-wrap">
+      ${buildTable(
+        ['Supplier','# Orders','Total Spend (VAT)','Avg Del Variance','QC Rejections','Settled','Departments Served'],
+        stats.map(r=>[esc(r.supplier),r.orders,etb(r.total_etb),varLabel(r.avg_del_var?Math.round(r.avg_del_var*10)/10:null),r.qty_rej||0,r.settled,esc(r.depts)])
+      )}
+    </div>`;
+
+  setTimeout(()=>{
+    barChart('ch-sup-spend',
+      top8.map(r=>sh(r.supplier)),
+      top8.map(r=>Math.round(r.total_etb)),
+      top8.map((_,i)=>PALETTE[i%PALETTE.length]),
+      {horizontal:true, lblFmt:v=>etb(v), tipFmt:v=>etb(v),
+       onClick:(e,els)=>{ if(els.length){ const s=top8[els[0].index].supplier; setChartFilter('supplier',s,'Supplier: '+sh(s)); } }}
+    );
+    const delData = stats.filter(r=>r.avg_del_var!==null).slice(0,10);
+    varBarChart('ch-sup-del', delData.map(r=>sh(r.supplier)), delData.map(r=>Math.round(r.avg_del_var*10)/10));
+    if(rejects.length) {
+      barChart('ch-sup-rej', rejects.map(r=>sh(r.supplier)), rejects.map(r=>r.qty_rej), '#C0392B',
+        {lblFmt:v=>v.toLocaleString(), tipFmt:v=>v.toLocaleString()+' units'});
+    }
+    // Stacked settled vs pending
+    destroyChart('ch-sup-sett');
+    const ctx1 = document.getElementById('ch-sup-sett');
+    if(ctx1) charts['ch-sup-sett'] = new Chart(ctx1,{
+      type:'bar',
+      data:{labels:top8.map(r=>sh(r.supplier)),datasets:[
+        {label:'Settled',data:top8.map(r=>r.settled),backgroundColor:'#719A58',borderRadius:3},
+        {label:'Pending',data:top8.map(r=>r.orders-r.settled),backgroundColor:'#F5ECD9',borderRadius:3},
+      ]},
+      options:{...BASE_OPTS,indexAxis:'y',plugins:{...BASE_OPTS.plugins,legend:{display:true,position:'bottom',labels:{font:{family:'Montserrat',size:10}}},datalabels:{display:false}}}
+    });
+    barChart('ch-sup-orders', top8.map(r=>sh(r.supplier)), top8.map(r=>r.orders),
+      top8.map((_,i)=>PALETTE[i%PALETTE.length]),{horizontal:true,lblFmt:v=>v});
+  },50);
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// TAB 5: CYCLE TIME
+// ═════════════════════════════════════════════════════════════════════════════
+function renderCycle() {
+  const d = filteredData;
+  const withCT = d.filter(r=>r.cycle_time!==null&&r.cycle_time>0);
+  const withLT = d.filter(r=>r.lead_time!==null&&r.lead_time>0);
+  const avgCT  = withCT.length ? Math.round(avgBy(withCT,'cycle_time')) : null;
+  const avgLT  = withLT.length ? Math.round(avgBy(withLT,'lead_time'))  : null;
+  const maxCT  = withCT.length ? Math.max(...withCT.map(r=>r.cycle_time)) : null;
+
+  const byDept = Object.entries(groupBy(withCT,'dept'))
+    .map(([dept,rows])=>({dept,avg:Math.round(avgBy(rows,'cycle_time'))})).sort((a,b)=>b.avg-a.avg);
+  const byMethod = Object.entries(groupBy(d.filter(r=>r.cycle_time>0),'method'))
+    .map(([m,rows])=>({method:m,avg:Math.round(avgBy(rows,'cycle_time')),count:rows.length}))
+    .filter(r=>r.method).sort((a,b)=>b.avg-a.avg);
+
+  const ctVals = withCT.map(r=>r.cycle_time).filter(v=>v>0&&v<400);
+  const bSz=15; const hist={};
+  ctVals.forEach(v=>{ const b=Math.floor(v/bSz)*bSz; hist[b]=(hist[b]||0)+1; });
+  const hKeys = Object.keys(hist).map(Number).sort((a,b)=>a-b);
+
+  document.getElementById('tab-cycle').innerHTML = `
+    <div class="kpi-row">
+      <div class="kpi-card"><div class="kpi-label">Avg Total Cycle Time</div><div class="kpi-value">${avgCT!==null?avgCT+'d':'—'}</div><div class="kpi-sub">PR received → settled</div></div>
+      <div class="kpi-card amber"><div class="kpi-label">Avg Lead Time</div><div class="kpi-value">${avgLT!==null?avgLT+'d':'—'}</div><div class="kpi-sub">PR received → delivered</div></div>
+      <div class="kpi-card red"><div class="kpi-label">Longest Cycle</div><div class="kpi-value">${maxCT!==null?maxCT+'d':'—'}</div><div class="kpi-sub">Slowest item to settle</div></div>
+      <div class="kpi-card moss"><div class="kpi-label">Fully Cycled Items</div><div class="kpi-value">${withCT.length}</div><div class="kpi-sub">Reached settlement</div></div>
+    </div>
+    <div class="chart-grid">
+      ${ctVals.length?`<div class="chart-card"><div class="chart-title">Distribution of Cycle Times (Days)</div><div class="chart-wrap" style="height:220px"><canvas id="ch-ct-hist"></canvas></div></div>`:'<div class="chart-card"><div class="empty-state"><div class="icon">📊</div>Cycle time data populates as items settle.</div></div>'}
+      <div class="chart-card"><div class="chart-title">Avg Cycle Time by Department</div><div class="chart-wrap" style="height:220px"><canvas id="ch-ct-dept"></canvas></div></div>
+    </div>
+    <div class="sec">Cycle Time by Procurement Method</div>
+    <div class="chart-grid">
+      <div class="chart-card wide"><div class="chart-title">Avg Cycle Time (Days) by Procurement Method</div><div class="chart-wrap" style="height:200px"><canvas id="ch-ct-method"></canvas></div></div>
+    </div>
+    <div class="sec">Longest Cycle Time Items (Top 10)</div>
+    <div class="tbl-wrap">
+      ${buildTable(
+        ['ID','Item','Dept','Method','Cycle Time (d)','Lead Time (d)','Stage','Status'],
+        [...withCT].sort((a,b)=>b.cycle_time-a.cycle_time).slice(0,10).map(r=>[
+          esc(r.row_id),esc(r.item),esc(r.dept),esc(r.method),
+          `<strong>${Math.round(r.cycle_time)}</strong>`,r.lead_time?Math.round(r.lead_time):'—',
+          esc(r.stage),badge(r.sett_status,r.is_settled?'settled':'pending')
+        ])
+      )}
+    </div>`;
+
+  setTimeout(()=>{
+    if(ctVals.length){
+      destroyChart('ch-ct-hist');
+      const ctx=document.getElementById('ch-ct-hist');
+      if(ctx) charts['ch-ct-hist']=new Chart(ctx,{
+        type:'bar',data:{labels:hKeys.map(b=>`${b}–${b+bSz}d`),datasets:[{data:hKeys.map(b=>hist[b]),backgroundColor:'#386A59',borderRadius:4}]},
+        options:{...BASE_OPTS,plugins:{...BASE_OPTS.plugins,datalabels:{display:true,anchor:'end',align:'top',color:'#1F2A26',font:{family:'Montserrat',size:9,weight:'600'},formatter:v=>v||''}}}
+      });
+    }
+    if(byDept.length)   barChart('ch-ct-dept',   byDept.map(r=>r.dept),  byDept.map(r=>r.avg),  '#386A59', {horizontal:true,lblFmt:v=>v+'d'});
+    if(byMethod.length) barChart('ch-ct-method',  byMethod.map(r=>r.method), byMethod.map(r=>r.avg), byMethod.map((_,i)=>PALETTE[i%PALETTE.length]), {lblFmt:v=>v+'d'});
+  },50);
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// TAB 6: FINANCIAL
+// ═════════════════════════════════════════════════════════════════════════════
+function renderFinance() {
+  const d = filteredData;
+  const totalSpend   = sumBy(d,'total_etb');         // VAT-inclusive
+  const settledSpend = sumBy(d.filter(r=>r.is_settled),'total_etb');
+  const urgentVal    = sumBy(d.filter(r=>r.is_urgent),'total_etb');
+
+  const byDept = Object.entries(groupBy(d,'dept'))
+    .map(([k,v])=>({dept:k,total:sumBy(v,'total_etb'),count:v.length,sett:sumBy(v.filter(r=>r.is_settled),'total_etb')}))
+    .filter(r=>r.total>0).sort((a,b)=>b.total-a.total);
+
+  // Group by PAYMENT TERM name — not PO number
+  const byTerm = Object.entries(groupBy(d.filter(r=>r.pay_term),'pay_term'))
+    .map(([k,v])=>({term:k,total:sumBy(v,'total_etb'),count:v.length}))
+    .filter(r=>r.total>0).sort((a,b)=>b.total-a.total);
+
+  const bySup = Object.entries(groupBy(d.filter(r=>r.supplier),'supplier'))
+    .map(([k,v])=>({sup:k,total:sumBy(v,'total_etb')}))
+    .filter(r=>r.total>0).sort((a,b)=>b.total-a.total).slice(0,8);
+
+  document.getElementById('tab-finance').innerHTML = `
+    <div class="kpi-row">
+      <div class="kpi-card"><div class="kpi-label">Total Committed (incl. VAT)</div><div class="kpi-value">${etb(totalSpend)}</div><div class="kpi-sub">All ${d.length} line items</div></div>
+      <div class="kpi-card moss"><div class="kpi-label">Settled Amount</div><div class="kpi-value">${etb(settledSpend)}</div><div class="kpi-sub">${totalSpend?Math.round(settledSpend/totalSpend*100):0}% of committed</div></div>
+      <div class="kpi-card amber"><div class="kpi-label">Outstanding</div><div class="kpi-value">${etb(totalSpend-settledSpend)}</div><div class="kpi-sub">Not yet settled</div></div>
+      <div class="kpi-card red"><div class="kpi-label">Urgent Items Value</div><div class="kpi-value">${etb(urgentVal)}</div><div class="kpi-sub">At-risk spend</div></div>
+    </div>
+    <div class="chart-grid">
+      <div class="chart-card">
+        <div class="chart-title">Spend by Department (ETB incl. VAT) <small>click to cross-filter</small></div>
+        <div class="chart-wrap" style="height:280px"><canvas id="ch-fin-dept"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Spend by Payment Term <small>grouped by term name</small></div>
+        <div class="chart-wrap" style="height:280px"><canvas id="ch-fin-term"></canvas></div>
+      </div>
+    </div>
+    <div class="sec">Top 8 Suppliers by Committed Spend</div>
+    <div class="chart-grid">
+      <div class="chart-card wide">
+        <div class="chart-title">Supplier Spend (ETB incl. VAT)</div>
+        <div class="chart-wrap" style="height:220px"><canvas id="ch-fin-sup"></canvas></div>
+      </div>
+    </div>
+    <div class="sec">Financial Register by Department</div>
+    <div class="tbl-wrap">
+      ${buildTable(
+        ['Department','Items','Total Committed (VAT)','Settled Amount','Outstanding','% Settled'],
+        byDept.map(r=>[esc(r.dept),r.count,etb(r.total),etb(r.sett),etb(r.total-r.sett),r.total?Math.round(r.sett/r.total*100)+'%':'—'])
+      )}
+    </div>`;
+
+  setTimeout(()=>{
+    barChart('ch-fin-dept', byDept.map(r=>r.dept), byDept.map(r=>Math.round(r.total)),
+      byDept.map((_,i)=>PALETTE[i%PALETTE.length]),
+      {lblFmt:v=>etb(v), tipFmt:v=>etb(v),
+       onClick:(e,els)=>{ if(els.length){ const dep=byDept[els[0].index].dept; setChartFilter('dept',dep,'Dept: '+dep); } }}
+    );
+    pieChart('ch-fin-term',
+      byTerm.map(r=>r.term),
+      byTerm.map(r=>Math.round(r.total)),
+      PALETTE.slice(0,byTerm.length),
+      {tipFmt:v=>etb(v),
+       onClick:(e,els)=>{ if(els.length){ const t=byTerm[els[0].index].term; setChartFilter('pay_term',t,'Pay Term: '+t); } }}
+    );
+    const sh=s=>s&&s.length>22?s.slice(0,22)+'…':s;
+    barChart('ch-fin-sup', bySup.map(r=>sh(r.sup)), bySup.map(r=>Math.round(r.total)),
+      bySup.map((_,i)=>PALETTE[i%PALETTE.length]),{lblFmt:v=>etb(v),tipFmt:v=>etb(v)});
+  },50);
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// TAB 7: SETTLEMENT AUDIT
+// ═════════════════════════════════════════════════════════════════════════════
+function renderAudit() {
+  const d = filteredData;
+  const scope    = d.filter(r=>['Delivery Stage','Settlement Stage','Completed'].includes(r.stage));
+  const passes   = scope.filter(r=>r.match==='PASS').length;
+  const fails    = scope.filter(r=>r.match==='FAIL').length;
+  const noVouch  = scope.filter(r=>!r.has_voucher).length;
+  const invFail  = scope.filter(r=>(r.inv_match||'').toLowerCase()==='no').length;
+  const legalFail= scope.filter(r=>(r.legal_doc||'').toLowerCase()==='no').length;
+  const grnFail  = scope.filter(r=>(r.grn_avail||'').toLowerCase()==='no').length;
+  const exceptions = scope.filter(r=>r.match==='FAIL'||!r.has_voucher||(r.inv_match||'').toLowerCase()==='no'||(r.legal_doc||'').toLowerCase()==='no');
+
+  const matchGroups={};
+  scope.forEach(r=>{ const k=r.match||'—'; matchGroups[k]=(matchGroups[k]||0)+1; });
+
+  document.getElementById('tab-audit').innerHTML = `
+    <div class="kpi-row">
+      <div class="kpi-card"><div class="kpi-label">Audit Scope</div><div class="kpi-value">${scope.length}</div><div class="kpi-sub">Delivery + Settlement + Completed</div></div>
+      <div class="kpi-card moss"><div class="kpi-label">3-Way Match PASS</div><div class="kpi-value">${passes}</div><div class="kpi-sub">${scope.length?Math.round(passes/scope.length*100):0}% pass rate</div></div>
+      <div class="kpi-card red"><div class="kpi-label">3-Way Match FAIL</div><div class="kpi-value">${fails}</div><div class="kpi-sub">Requires resolution</div></div>
+      <div class="kpi-card hem"><div class="kpi-label">Missing Vouchers</div><div class="kpi-value">${noVouch}</div><div class="kpi-sub">Cannot be fully settled</div></div>
+    </div>
+    <div class="chart-grid">
+      <div class="chart-card">
+        <div class="chart-title">3-Way Match Result Breakdown</div>
+        <div class="chart-wrap" style="height:220px"><canvas id="ch-match-pie"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Settlement Control Flag Summary</div>
+        <div style="padding:12px 0">
+          ${[['Invoice Amount Mismatch',invFail,'#C0392B'],['Invalid / Missing Legal Document',legalFail,'#C0392B'],['GRN Not Available',grnFail,'#D68910'],['Missing Voucher Number',noVouch,'#675633']]
+            .map(([label,count,color])=>{
+              const pct=scope.length?Math.round(count/scope.length*100):0;
+              return `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #EEE;font-size:12px">
+                <span>${label}</span>
+                <span style="color:${count>0?color:'#719A58'};font-weight:700;font-size:18px;font-family:'JetBrains Mono',monospace">${count} <span style="color:#5E6B64;font-size:10px;font-weight:400">(${pct}%)</span></span>
+              </div>`;
+            }).join('')}
+        </div>
+      </div>
+    </div>
+    <div class="sec" style="color:var(--red);border-bottom-color:var(--red)">Settlement Exceptions — Action Required <span class="sec-count">${exceptions.length} items</span></div>
+    <div class="tbl-wrap">
+      <div class="tbl-head">Items failing match or missing controls (${exceptions.length})</div>
+      ${buildTable(
+        ['ID','Item','Dept','Supplier','Amount (VAT)','PO No','GRN No','Voucher','Inv Match','Legal Doc','GRN Avail','3-Way','Status'],
+        exceptions.map(r=>[
+          esc(r.row_id),esc(r.item),esc(r.dept),esc(r.supplier),etb(r.total_etb),
+          esc(r.po_no),esc(r.grn_no),
+          r.has_voucher?esc(r.voucher):badge('MISSING','fail'),
+          (r.inv_match||'').toLowerCase()==='yes'?badge('Yes','pass'):badge(r.inv_match||'—','fail'),
+          (r.legal_doc||'').toLowerCase()==='yes'?badge('Yes','pass'):badge(r.legal_doc||'—','fail'),
+          (r.grn_avail||'').toLowerCase()==='yes'?badge('Yes','pass'):badge(r.grn_avail||'—','fail'),
+          r.match==='PASS'?badge('PASS','pass'):r.match==='FAIL'?badge('FAIL','fail'):badge(r.match||'—','pending'),
+          badge(r.sett_status,r.is_settled?'settled':'pending')
+        ]),
+        '✅ All items in scope have clean 3-way match records.'
+      )}
+    </div>
+    <div class="sec">Full Settlement Register</div>
+    <div class="tbl-wrap">
+      ${buildTable(
+        ['ID','Item','Dept','Supplier','Amount (VAT)','PO','GRN','Voucher','Sett Date','3-Way','Status'],
+        scope.map(r=>[
+          esc(r.row_id),esc(r.item),esc(r.dept),esc(r.supplier),etb(r.total_etb),
+          esc(r.po_no),esc(r.grn_no),esc(r.voucher)||'—',esc(r.sett_date)||'—',
+          r.match==='PASS'?badge('PASS','pass'):r.match==='FAIL'?badge('FAIL','fail'):badge(r.match||'—','pending'),
+          badge(r.sett_status,r.is_settled?'settled':'pending')
+        ])
+      )}
+    </div>`;
+
+  setTimeout(()=>{
+    const labels=Object.keys(matchGroups), vals=Object.values(matchGroups);
+    const colors=labels.map(l=>l==='PASS'?'#719A58':l==='FAIL'?'#C0392B':'#9BB8A8');
+    pieChart('ch-match-pie',labels,vals,colors);
+  },50);
+}
+
+// ── BOOT ──────────────────────────────────────────────────────────────────────
 loadData();
-document.addEventListener("keydown",e=>{if(e.key==="Escape")closeModal();});
-<\/script>
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeModal(); });
+</script>
 </body>
 </html>
