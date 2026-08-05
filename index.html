@@ -65,6 +65,8 @@ html,body{height:100%;font-family:'Montserrat',sans-serif;background:var(--cream
 .sb-filter label{color:rgba(255,255,255,.5);font-size:10px;font-weight:600;letter-spacing:.5px;display:block;margin-bottom:4px}
 .sb-filter select{width:100%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);color:#fff;padding:6px 10px;border-radius:6px;font-family:'Montserrat',sans-serif;font-size:11px;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='rgba(255,255,255,.4)'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:28px}
 .sb-filter select option{background:#2A3F38;color:#fff}
+.sb-filter input[type="date"]{width:100%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);color:#fff;padding:6px 10px;border-radius:6px;font-family:'Montserrat',sans-serif;font-size:11px;color-scheme:dark}
+.sb-filter input[type="date"]:focus{outline:none;border-color:var(--moss)}
 .sb-filter select:focus{outline:none;border-color:var(--moss)}
 .clear-filters-btn{display:none;width:100%;background:rgba(192,57,43,.2);border:1px solid rgba(192,57,43,.4);color:#FF9E9E;padding:6px;border-radius:6px;cursor:pointer;font-size:10px;font-weight:600;font-family:'Montserrat',sans-serif;margin-top:4px}
 .clear-filters-btn.visible{display:block}
@@ -336,6 +338,14 @@ tr:hover td{background:#F8FBF8}
     <div class="sb-sub">MIDROC Investment Group</div>
   </div>
   <div class="sb-section">Filters</div>
+  <div class="sb-filter">
+    <label>Start Date (PR Date)</label>
+    <input type="date" id="f-start-date" onchange="applyFilters()">
+  </div>
+  <div class="sb-filter">
+    <label>Finish Date (PR Date)</label>
+    <input type="date" id="f-finish-date" onchange="applyFilters()">
+  </div>
   <div class="sb-filter">
     <label>Stage</label>
     <select id="f-stage" onchange="applyFilters()">
@@ -749,11 +759,13 @@ function fillSelect(id, options, placeholder) {
 }
 
 function hasActiveFilters() {
-  return ['f-stage','f-dept','f-officer','f-priority','f-method','f-sett']
+  return ['f-start-date','f-finish-date','f-stage','f-dept','f-officer','f-priority','f-method','f-sett']
     .some(id => document.getElementById(id).value !== '') || kpiFilter || chartFilter;
 }
 
 function applyFilters() {
+  const startDate = document.getElementById('f-start-date').value;
+  const finishDate = document.getElementById('f-finish-date').value;
   const stage   = document.getElementById('f-stage').value;
   const dept    = document.getElementById('f-dept').value;
   const officer = document.getElementById('f-officer').value;
@@ -761,7 +773,28 @@ function applyFilters() {
   const method  = document.getElementById('f-method').value;
   const sett    = document.getElementById('f-sett').value;
 
+  // Date range is based on PR Date and is inclusive of both selected dates.
+  // Rows without a valid PR Date are excluded whenever a date boundary is selected.
+  const inDateRange = r => {
+    if(!startDate && !finishDate) return true;
+    const d = parseDateValue(r.pr_date);
+    if(!d) return false;
+    d.setHours(0,0,0,0);
+    if(startDate) {
+      const s = new Date(startDate + 'T00:00:00');
+      if(d < s) return false;
+    }
+    if(finishDate) {
+      const f = new Date(finishDate + 'T23:59:59');
+      if(d > f) return false;
+    }
+    return true;
+  };
+
+  const dateScopedData = rawData.filter(inDateRange);
+
   filteredData = rawData.filter(r =>
+    inDateRange(r)                                                &&
     (!stage  || r.stage    === stage)                                   &&
     (!dept   || r.dept     === dept)                                    &&
     (!officer|| r.coll_off === officer || r.eval_off === officer)       &&
@@ -771,7 +804,7 @@ function applyFilters() {
     applyKpiFilter(r) && applyChartFilter(r)
   );
 
-  document.getElementById('stat-total').textContent   = rawData.length;
+  document.getElementById('stat-total').textContent   = dateScopedData.length;
   document.getElementById('stat-showing').textContent = filteredData.length;
   document.getElementById('stat-urgent').textContent  = filteredData.filter(r=>r.is_urgent&&!r.is_settled).length;
   document.getElementById('stat-delayed').textContent = filteredData.filter(r=>r.is_delayed&&!r.is_settled).length;
@@ -820,7 +853,7 @@ function setChartFilter(field, value, label) {
 }
 
 function clearAllFilters() {
-  ['f-stage','f-dept','f-officer','f-priority','f-method','f-sett'].forEach(id=>document.getElementById(id).value='');
+  ['f-start-date','f-finish-date','f-stage','f-dept','f-officer','f-priority','f-method','f-sett'].forEach(id=>document.getElementById(id).value='');
   kpiFilter=null; chartFilter=null;
   applyFilters();
 }
