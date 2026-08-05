@@ -462,6 +462,34 @@ const groupBy = (arr,key) => arr.reduce((acc,row)=>{ const k=row[key]||'Unknown'
 const sumBy   = (arr,key) => arr.reduce((s,r)=>s+(r[key]||0),0);
 const avgBy   = (arr,key) => { const v=arr.map(r=>r[key]).filter(x=>x!==null); return v.length?v.reduce((a,b)=>a+b,0)/v.length:null; };
 
+// Date helpers for lead-time analysis
+function parseDateValue(v) {
+  if(!v) return null;
+  const s=String(v).trim();
+  if(!s) return null;
+  const m=s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+  if(m){
+    const d=new Date(Number(m[3]),Number(m[2])-1,Number(m[1]));
+    return isNaN(d.getTime())?null:d;
+  }
+  const d=new Date(s);
+  return isNaN(d.getTime())?null:d;
+}
+function daysBetween(start,end){
+  const a=parseDateValue(start), b=parseDateValue(end);
+  if(!a||!b) return null;
+  const diff=Math.round((b-a)/86400000);
+  return diff>=0?diff:null;
+}
+function avgValues(values){
+  const v=values.filter(x=>x!==null&&x!==undefined&&!isNaN(x));
+  return v.length?v.reduce((a,b)=>a+b,0)/v.length:null;
+}
+function dayLabel(v){
+  return v===null||v===undefined||isNaN(v)?'—':(Math.round(v*10)/10)+'d';
+}
+
+
 function normStatus(s) {
   if(!s) return 'Pending';
   const map = {settled:'Settled',setteld:'Settled',setteled:'Settled',stteled:'Settled','settled.':'Settled'};
@@ -573,9 +601,9 @@ function parseRow(rawRow, cm) {
     item:      g('item'),       category:  g('category'),  critical: g('critical'),
     uom:       g('uom'),        qty_req:   n('qty_req'),
     dept:      g('dept'),       priority:  prio,           method:   g('method'),
-    coll_off:  g('coll_off'),   std_coll:  g('std_coll'),  act_coll: g('act_coll'),
+    coll_off:  g('coll_off'),   std_coll:  n('std_coll'),  act_coll: g('act_coll'),
     coll_var:  cv,              coll_status: g('coll_status'),
-    eval_off:  g('eval_off'),   std_eval:  g('std_eval'),  act_eval: g('act_eval'),
+    eval_off:  g('eval_off'),   std_eval:  n('std_eval'),  act_eval: g('act_eval'),
     eval_var:  ev,              eval_delay: n('eval_delay'), eval_status: g('eval_status'),
     supplier:  g('supplier'),
     base_etb:  n('base_etb'),
@@ -1123,36 +1151,68 @@ function renderOps() {
   const delayed = d.filter(r=>r.is_delayed&&!r.is_settled);
   const gm      = d.filter(r=>r.stage==='GM / Payment Approval');
 
+  const priorityStats = Object.entries(groupBy(d.filter(r=>r.priority),'priority'))
+    .map(([priority,rows])=>({priority,count:rows.length,pct:d.length?rows.length/d.length*100:0}))
+    .sort((a,b)=>b.count-a.count);
+
+  // Urgent orders per department: all URGENT records in the current filter scope.
+  const urgentAll = d.filter(r=>r.is_urgent);
+  const urgentDept = Object.entries(groupBy(urgentAll.filter(r=>r.dept),'dept'))
+    .map(([dept,rows])=>({dept,count:rows.length}))
+    .sort((a,b)=>b.count-a.count);
+
+  const methodStats = Object.entries(groupBy(d.filter(r=>r.method),'method'))
+    .map(([method,rows])=>({method,count:rows.length,value:sumBy(rows,'total_etb')}))
+    .sort((a,b)=>b.value-a.value);
+  const methodTotal = methodStats.reduce((s,r)=>s+r.value,0);
+
   document.getElementById('tab-ops').innerHTML = `
-    <div class="sec" style="color:var(--red);border-bottom-color:var(--red)">🚨 Urgent Items — Open <span class="sec-count">${urgent.length} items</span></div>
-    <div class="tbl-wrap">
-      <div class="tbl-head">URGENT priority, not yet settled (${urgent.length})</div>
-      ${buildTable(
-        ['ID','PR No','Item','Dept','Stage','Coll Officer','Spend (VAT)','Coll Var','Eval Var','Remarks'],
-        urgent.map(r=>[esc(r.row_id),esc(r.pr_no),esc(r.item),esc(r.dept),esc(r.stage),esc(r.coll_off),etb(r.total_etb),varLabel(r.coll_var),varLabel(r.eval_var),esc(r.remarks)||'—']),
-        '✅ No open urgent items — all clear.'
-      )}
+    <div class="sec">Priority Analysis <span class="sec-count">${d.length} items</span></div>
+    <div class="chart-grid">
+      <div class="chart-card"><div class="chart-title">Number of Tasks by Priority</div><div class="chart-wrap" style="height:220px"><canvas id="ch-priority-count"></canvas></div></div>
+      <div class="chart-card"><div class="chart-title">Total Urgent Orders by Department</div><div class="chart-wrap" style="height:${Math.max(220,urgentDept.length*36)}px"><canvas id="ch-urgent-dept"></canvas></div></div>
     </div>
+    <div class="chart-grid">
+      <div class="tbl-wrap"><div class="tbl-head">Priority Summary</div>${buildTable(['Priority','No. of Tasks','% of Total'],priorityStats.map(r=>[r.priority==='URGENT'?badge('URGENT','urgent'):badge(r.priority,'std'),r.count,r.pct.toFixed(1)+'%']))}</div>
+      <div class="tbl-wrap"><div class="tbl-head">Urgent Orders by Department <small style="font-weight:400;color:var(--mt)">${urgentAll.length} total urgent</small></div>${buildTable(['Department','Urgent Orders'],urgentDept.map(r=>[esc(r.dept),`<strong>${r.count}</strong>`]),'No urgent orders in the current filter scope.')}</div>
+    </div>
+
+    <div class="sec">Procurement Method Analysis <span class="sec-count">${methodStats.length} methods</span></div>
+    <div class="chart-grid">
+      <div class="chart-card"><div class="chart-title">Number of Items by Procurement Method</div><div class="chart-wrap" style="height:240px"><canvas id="ch-method-count"></canvas></div></div>
+      <div class="chart-card"><div class="chart-title">Procurement Value by Method <small>VAT inclusive</small></div><div class="chart-wrap" style="height:240px"><canvas id="ch-method-value"></canvas></div></div>
+    </div>
+    <div class="tbl-wrap"><div class="tbl-head">Procurement Method Summary</div>${buildTable(['Procurement Method','No. of Items','Total Value (VAT)','% of Total Value'],methodStats.map(r=>[esc(r.method),r.count,etb(r.value),methodTotal?(r.value/methodTotal*100).toFixed(1)+'%':'—']))}</div>
+
+    <div class="sec" style="color:var(--red);border-bottom-color:var(--red)">🚨 Urgent Items — Open <span class="sec-count">${urgent.length} items</span></div>
+    <div class="tbl-wrap"><div class="tbl-head">URGENT priority, not yet settled (${urgent.length})</div>${buildTable(
+      ['ID','PR No','Item','Dept','Stage','Coll Officer','Spend (VAT)','Coll Var','Eval Var','Remarks'],
+      urgent.map(r=>[esc(r.row_id),esc(r.pr_no),esc(r.item),esc(r.dept),esc(r.stage),esc(r.coll_off),etb(r.total_etb),varLabel(r.coll_var),varLabel(r.eval_var),esc(r.remarks)||'—']),
+      '✅ No open urgent items — all clear.'
+    )}</div>
 
     <div class="sec" style="color:var(--amber);border-bottom-color:var(--amber)">⚠️ Delayed Items — Active <span class="sec-count">${delayed.length} items</span></div>
-    <div class="tbl-wrap">
-      <div class="tbl-head">Items with negative variance, not settled (${delayed.length})</div>
-      ${buildTable(
-        ['ID','Item','Dept','Priority','Stage','Coll Var','Eval Var','Coll Officer','Eval Officer'],
-        delayed.map(r=>[esc(r.row_id),esc(r.item),esc(r.dept),r.is_urgent?badge('URGENT','urgent'):badge('STD','std'),esc(r.stage),varLabel(r.coll_var),varLabel(r.eval_var),esc(r.coll_off),esc(r.eval_off)]),
-        '✅ No active delayed items.'
-      )}
-    </div>
+    <div class="tbl-wrap"><div class="tbl-head">Items with negative variance, not settled (${delayed.length})</div>${buildTable(
+      ['ID','Item','Dept','Priority','Stage','Coll Var','Eval Var','Coll Officer','Eval Officer'],
+      delayed.map(r=>[esc(r.row_id),esc(r.item),esc(r.dept),r.is_urgent?badge('URGENT','urgent'):badge('STD','std'),esc(r.stage),varLabel(r.coll_var),varLabel(r.eval_var),esc(r.coll_off),esc(r.eval_off)]),
+      '✅ No active delayed items.'
+    )}</div>
 
     <div class="sec">🔐 Pending GM / Payment Approval <span class="sec-count">${gm.length} items</span></div>
-    <div class="tbl-wrap">
-      <div class="tbl-head">Items awaiting GM sign-off (${gm.length})</div>
-      ${buildTable(
-        ['ID','PR No','Item','Dept','Supplier','Spend (VAT)','Pay Term','# Proformas','CPV Date'],
-        gm.map(r=>[esc(r.row_id),esc(r.pr_no),esc(r.item),esc(r.dept),esc(r.supplier),etb(r.total_etb),esc(r.pay_term)||'—',r.proformas||'—',r.cpv_date||'—']),
-        '✅ No items pending GM approval.'
-      )}
-    </div>`;
+    <div class="tbl-wrap"><div class="tbl-head">Items awaiting GM sign-off (${gm.length})</div>${buildTable(
+      ['ID','PR No','Item','Dept','Supplier','Spend (VAT)','Pay Term','# Proformas','CPV Date'],
+      gm.map(r=>[esc(r.row_id),esc(r.pr_no),esc(r.item),esc(r.dept),esc(r.supplier),etb(r.total_etb),esc(r.pay_term)||'—',r.proformas||'—',r.cpv_date||'—']),
+      '✅ No items pending GM approval.'
+    )}</div>`;
+
+  setTimeout(()=>{
+    if(priorityStats.length) barChart('ch-priority-count',priorityStats.map(r=>r.priority),priorityStats.map(r=>r.count),priorityStats.map(r=>r.priority==='URGENT'?'#C0392B':'#719A58'),{lblFmt:v=>v});
+    if(urgentDept.length) barChart('ch-urgent-dept',urgentDept.map(r=>r.dept),urgentDept.map(r=>r.count),'#C0392B',{horizontal:true,lblFmt:v=>v});
+    if(methodStats.length){
+      barChart('ch-method-count',methodStats.map(r=>r.method),methodStats.map(r=>r.count),'#386A59',{lblFmt:v=>v});
+      barChart('ch-method-value',methodStats.map(r=>r.method),methodStats.map(r=>r.value),'#C2984D',{lblFmt:v=>v>=1e6?(v/1e6).toFixed(1)+'M':v>=1e3?Math.round(v/1e3)+'K':Math.round(v),tipFmt:v=>etb(v)});
+    }
+  },50);
 }
 
 // ═════════════════════════════════════════════════════════════════════════════
@@ -1175,51 +1235,65 @@ function renderPeople() {
     avg_dl: avgBy(rows,'eval_delay'),
   })).sort((a,b)=>b.count-a.count);
 
+  const officers=[...new Set([...d.map(r=>r.coll_off),...d.map(r=>r.eval_off)].filter(Boolean))].sort();
+  const taskStats=officers.map(officer=>{
+    const c=d.filter(r=>r.coll_off===officer && r.coll_var!==null);
+    const e=d.filter(r=>r.eval_off===officer && r.eval_var!==null);
+    const standards=[...c.map(r=>r.std_coll),...e.map(r=>r.std_eval)].filter(v=>v!==null&&!isNaN(v));
+    return {
+      officer,
+      coll_count:c.length, coll_avg:avgBy(c,'coll_var'),
+      eval_count:e.length, eval_avg:avgBy(e,'eval_var'),
+      // The current source has Payment Variance but no Payment Officer field,
+      // so payment cannot be assigned to an officer without inventing a relationship.
+      pay_count:null, pay_avg:null,
+      avg_standard:avgValues(standards)
+    };
+  });
+
   const ch = Math.max(180, collStats.length*44);
   const eh = Math.max(180, evalStats.length*44);
   document.getElementById('tab-people').innerHTML = `
     <div class="sec">Collection Officer Performance</div>
     <div class="chart-grid">
-      <div class="chart-card">
-        <div class="chart-title">Avg Collection Variance by Officer <small>(+ ahead, – delayed)</small></div>
-        <div class="chart-wrap" style="height:${ch}px"><canvas id="ch-coll-var"></canvas></div>
-      </div>
-      <div class="chart-card">
-        <div class="chart-title">Items Handled by Collection Officer</div>
-        <div class="chart-wrap" style="height:${ch}px"><canvas id="ch-coll-count"></canvas></div>
-      </div>
+      <div class="chart-card"><div class="chart-title">Avg Collection Variance by Officer <small>(+ ahead, – delayed)</small></div><div class="chart-wrap" style="height:${ch}px"><canvas id="ch-coll-var"></canvas></div></div>
+      <div class="chart-card"><div class="chart-title">Items Handled by Collection Officer</div><div class="chart-wrap" style="height:${ch}px"><canvas id="ch-coll-count"></canvas></div></div>
     </div>
-    <div class="tbl-wrap">
-      <div class="tbl-head">Collection Officer Summary</div>
-      ${buildTable(
-        ['Officer','Items','Avg Coll Variance','On-Time Rate','Settled','Spend (VAT)'],
-        collStats.map(r=>[esc(r.officer),r.count,varLabel(r.avg_cv?Math.round(r.avg_cv*10)/10:null),r.count?Math.round(r.on_time/r.count*100)+'%':'—',r.settled,etb(r.spend)])
-      )}
-    </div>
+    <div class="tbl-wrap"><div class="tbl-head">Collection Officer Summary</div>${buildTable(
+      ['Officer','Items','Avg Coll Variance','On-Time Rate','Settled','Spend (VAT)'],
+      collStats.map(r=>[esc(r.officer),r.count,varLabel(r.avg_cv!==null?Math.round(r.avg_cv*10)/10:null),r.count?Math.round(r.on_time/r.count*100)+'%':'—',r.settled,etb(r.spend)])
+    )}</div>
+
     <div class="sec">Evaluation Officer Performance</div>
     <div class="chart-grid">
-      <div class="chart-card">
-        <div class="chart-title">Avg Evaluation Variance by Officer <small>(+ ahead, – delayed)</small></div>
-        <div class="chart-wrap" style="height:${eh}px"><canvas id="ch-eval-var"></canvas></div>
-      </div>
-      <div class="chart-card">
-        <div class="chart-title">Evaluator Own Delayance <small>(+ faster than gap, – slower)</small></div>
-        <div class="chart-wrap" style="height:${eh}px"><canvas id="ch-eval-delay"></canvas></div>
-      </div>
+      <div class="chart-card"><div class="chart-title">Avg Evaluation Variance by Officer <small>(+ ahead, – delayed)</small></div><div class="chart-wrap" style="height:${eh}px"><canvas id="ch-eval-var"></canvas></div></div>
+      <div class="chart-card"><div class="chart-title">Evaluator Own Delayance <small>(+ faster than gap, – slower)</small></div><div class="chart-wrap" style="height:${eh}px"><canvas id="ch-eval-delay"></canvas></div></div>
     </div>
+    <div class="tbl-wrap"><div class="tbl-head">Evaluation Officer Summary</div>${buildTable(
+      ['Officer','Items Evaluated','Avg Eval Variance','Evaluator Delayance'],
+      evalStats.map(r=>[esc(r.officer),r.count,varLabel(r.avg_ev!==null?Math.round(r.avg_ev*10)/10:null),varLabel(r.avg_dl!==null?Math.round(r.avg_dl*10)/10:null)])
+    )}</div>
+
+    <div class="sec">Officer Performance by Task <span class="sec-count">${taskStats.length} officers</span></div>
     <div class="tbl-wrap">
-      <div class="tbl-head">Evaluation Officer Summary</div>
+      <div class="tbl-head">Task Performance <small style="font-weight:400;color:var(--mt)">+ ahead of standard · − delayed</small></div>
       ${buildTable(
-        ['Officer','Items Evaluated','Avg Eval Variance','Evaluator Delayance'],
-        evalStats.map(r=>[esc(r.officer),r.count,varLabel(r.avg_ev?Math.round(r.avg_ev*10)/10:null),varLabel(r.avg_dl?Math.round(r.avg_dl*10)/10:null)])
+        ['Officer','Collection — No. of Tasks','Collection — Avg Lead / Delay','Evaluation — No. of Tasks','Evaluation — Avg Lead / Delay','Payment — No. of Tasks','Payment — Avg Lead / Delay','Average Standard'],
+        taskStats.map(r=>[
+          `<strong>${esc(r.officer)}</strong>`,
+          r.coll_count||'—',varLabel(r.coll_avg!==null?Math.round(r.coll_avg*10)/10:null),
+          r.eval_count||'—',varLabel(r.eval_avg!==null?Math.round(r.eval_avg*10)/10:null),
+          '—','—',dayLabel(r.avg_standard)
+        ])
       )}
+      <div style="padding:9px 12px;font-size:10px;color:var(--mt);border-top:1px solid var(--border)">Payment columns are intentionally blank because the current source contains Payment Variance but no Payment Officer field to identify which officer performed the payment task.</div>
     </div>`;
 
   setTimeout(()=>{
-    varBarChart('ch-coll-var',   collStats.map(r=>r.officer), collStats.map(r=>r.avg_cv?Math.round(r.avg_cv*10)/10:null));
-    barChart('ch-coll-count', collStats.map(r=>r.officer), collStats.map(r=>r.count), '#386A59', {horizontal:true, lblFmt:v=>v});
-    varBarChart('ch-eval-var',   evalStats.map(r=>r.officer), evalStats.map(r=>r.avg_ev?Math.round(r.avg_ev*10)/10:null));
-    varBarChart('ch-eval-delay', evalStats.map(r=>r.officer), evalStats.map(r=>r.avg_dl?Math.round(r.avg_dl*10)/10:null));
+    varBarChart('ch-coll-var',collStats.map(r=>r.officer),collStats.map(r=>r.avg_cv!==null?Math.round(r.avg_cv*10)/10:null));
+    barChart('ch-coll-count',collStats.map(r=>r.officer),collStats.map(r=>r.count),'#386A59',{horizontal:true,lblFmt:v=>v});
+    varBarChart('ch-eval-var',evalStats.map(r=>r.officer),evalStats.map(r=>r.avg_ev!==null?Math.round(r.avg_ev*10)/10:null));
+    varBarChart('ch-eval-delay',evalStats.map(r=>r.officer),evalStats.map(r=>r.avg_dl!==null?Math.round(r.avg_dl*10)/10:null));
   },50);
 }
 
@@ -1326,16 +1400,30 @@ function renderCycle() {
   const avgLT  = withLT.length ? Math.round(avgBy(withLT,'lead_time'))  : null;
   const maxCT  = withCT.length ? Math.max(...withCT.map(r=>r.cycle_time)) : null;
 
-  const byDept = Object.entries(groupBy(withCT,'dept'))
-    .map(([dept,rows])=>({dept,avg:Math.round(avgBy(rows,'cycle_time'))})).sort((a,b)=>b.avg-a.avg);
-  const byMethod = Object.entries(groupBy(d.filter(r=>r.cycle_time>0),'method'))
-    .map(([m,rows])=>({method:m,avg:Math.round(avgBy(rows,'cycle_time')),count:rows.length}))
-    .filter(r=>r.method).sort((a,b)=>b.avg-a.avg);
+  const byDept = Object.entries(groupBy(withCT,'dept')).map(([dept,rows])=>({dept,avg:Math.round(avgBy(rows,'cycle_time'))})).sort((a,b)=>b.avg-a.avg);
+  const byMethod = Object.entries(groupBy(d.filter(r=>r.cycle_time>0),'method')).map(([m,rows])=>({method:m,avg:Math.round(avgBy(rows,'cycle_time')),count:rows.length})).filter(r=>r.method).sort((a,b)=>b.avg-a.avg);
 
   const ctVals = withCT.map(r=>r.cycle_time).filter(v=>v>0&&v<400);
-  const bSz=15; const hist={};
+  const bSz=15, hist={};
   ctVals.forEach(v=>{ const b=Math.floor(v/bSz)*bSz; hist[b]=(hist[b]||0)+1; });
-  const hKeys = Object.keys(hist).map(Number).sort((a,b)=>a-b);
+  const hKeys=Object.keys(hist).map(Number).sort((a,b)=>a-b);
+
+  const leadRows=d.map(r=>({...r,
+    dept_lead:daysBetween(r.pr_date,r.pr_rec),
+    proc_lead:daysBetween(r.pr_rec,r.cpv_date),
+    supplier_lead:daysBetween(r.cpv_date,r.grn_date)
+  }));
+  const deptLeadRows=leadRows.filter(r=>r.dept_lead!==null);
+  const procLeadRows=leadRows.filter(r=>r.proc_lead!==null);
+  const supplierLeadRows=leadRows.filter(r=>r.supplier_lead!==null);
+  const avgDeptLead=avgValues(deptLeadRows.map(r=>r.dept_lead));
+  const avgProcLead=avgValues(procLeadRows.map(r=>r.proc_lead));
+  const avgSupplierLead=avgValues(supplierLeadRows.map(r=>r.supplier_lead));
+
+  const deptLeadStats=Object.entries(groupBy(deptLeadRows.filter(r=>r.dept),'dept')).map(([dept,rows])=>({dept,avg:avgValues(rows.map(r=>r.dept_lead)),count:rows.length})).sort((a,b)=>b.avg-a.avg);
+  const procLeadStats=Object.entries(groupBy(procLeadRows.filter(r=>r.method),'method')).map(([method,rows])=>({method,avg:avgValues(rows.map(r=>r.proc_lead)),count:rows.length})).sort((a,b)=>b.avg-a.avg);
+  const supplierLeadStats=Object.entries(groupBy(supplierLeadRows.filter(r=>r.supplier),'supplier')).map(([supplier,rows])=>({supplier,avg:avgValues(rows.map(r=>r.supplier_lead)),count:rows.length})).sort((a,b)=>b.avg-a.avg);
+  const topSupplierLead=supplierLeadStats.slice(0,15);
 
   document.getElementById('tab-cycle').innerHTML = `
     <div class="kpi-row">
@@ -1349,32 +1437,39 @@ function renderCycle() {
       <div class="chart-card"><div class="chart-title">Avg Cycle Time by Department</div><div class="chart-wrap" style="height:220px"><canvas id="ch-ct-dept"></canvas></div></div>
     </div>
     <div class="sec">Cycle Time by Procurement Method</div>
-    <div class="chart-grid">
-      <div class="chart-card wide"><div class="chart-title">Avg Cycle Time (Days) by Procurement Method</div><div class="chart-wrap" style="height:200px"><canvas id="ch-ct-method"></canvas></div></div>
-    </div>
+    <div class="chart-grid"><div class="chart-card wide"><div class="chart-title">Avg Cycle Time (Days) by Procurement Method</div><div class="chart-wrap" style="height:200px"><canvas id="ch-ct-method"></canvas></div></div></div>
     <div class="sec">Longest Cycle Time Items (Top 10)</div>
-    <div class="tbl-wrap">
-      ${buildTable(
-        ['ID','Item','Dept','Method','Cycle Time (d)','Lead Time (d)','Stage','Status'],
-        [...withCT].sort((a,b)=>b.cycle_time-a.cycle_time).slice(0,10).map(r=>[
-          esc(r.row_id),esc(r.item),esc(r.dept),esc(r.method),
-          `<strong>${Math.round(r.cycle_time)}</strong>`,r.lead_time?Math.round(r.lead_time):'—',
-          esc(r.stage),badge(r.sett_status,r.is_settled?'settled':'pending')
-        ])
-      )}
-    </div>`;
+    <div class="tbl-wrap">${buildTable(['ID','Item','Dept','Method','Cycle Time (d)','Lead Time (d)','Stage','Status'],[...withCT].sort((a,b)=>b.cycle_time-a.cycle_time).slice(0,10).map(r=>[esc(r.row_id),esc(r.item),esc(r.dept),esc(r.method),`<strong>${Math.round(r.cycle_time)}</strong>`,r.lead_time?Math.round(r.lead_time):'—',esc(r.stage),badge(r.sett_status,r.is_settled?'settled':'pending')]))}</div>
+
+    <div class="sec">Lead Time Analysis <span class="sec-count">Department · Procurement · Supplier</span></div>
+    <div class="kpi-row">
+      <div class="kpi-card"><div class="kpi-label">Department Lead Time</div><div class="kpi-value">${dayLabel(avgDeptLead)}</div><div class="kpi-sub">PR Date → PR Received</div></div>
+      <div class="kpi-card amber"><div class="kpi-label">Procurement Lead Time</div><div class="kpi-value">${dayLabel(avgProcLead)}</div><div class="kpi-sub">PR Received → CPV Date</div></div>
+      <div class="kpi-card moss"><div class="kpi-label">Supplier Lead Time</div><div class="kpi-value">${dayLabel(avgSupplierLead)}</div><div class="kpi-sub">CPV Date → GRN Date</div></div>
+      <div class="kpi-card hem"><div class="kpi-label">Complete Lead-Time Records</div><div class="kpi-value">${leadRows.filter(r=>r.dept_lead!==null&&r.proc_lead!==null&&r.supplier_lead!==null).length}</div><div class="kpi-sub">All three periods available</div></div>
+    </div>
+    <div class="chart-grid">
+      <div class="chart-card"><div class="chart-title">Department Lead Time by Requesting Department <small>PR Date → PR Received</small></div><div class="chart-wrap" style="height:${Math.max(220,deptLeadStats.length*36)}px"><canvas id="ch-lead-dept"></canvas></div></div>
+      <div class="chart-card"><div class="chart-title">Procurement Lead Time by Method <small>PR Received → CPV</small></div><div class="chart-wrap" style="height:${Math.max(220,procLeadStats.length*36)}px"><canvas id="ch-lead-proc"></canvas></div></div>
+    </div>
+    <div class="chart-grid"><div class="chart-card wide"><div class="chart-title">Supplier Lead Time <small>CPV → GRN · top 15 slowest suppliers</small></div><div class="chart-wrap" style="height:${Math.max(240,topSupplierLead.length*36)}px"><canvas id="ch-lead-supplier"></canvas></div></div></div>
+    <div class="tbl-wrap"><div class="tbl-head">Lead Time Summary</div>${buildTable(['Lead Time Type','From','To','Average','Records'],[
+      ['Department','PR Date','PR Received',dayLabel(avgDeptLead),deptLeadRows.length],
+      ['Procurement','PR Received','CPV Date',dayLabel(avgProcLead),procLeadRows.length],
+      ['Supplier','CPV Date','GRN Date',dayLabel(avgSupplierLead),supplierLeadRows.length]
+    ])}</div>`;
 
   setTimeout(()=>{
     if(ctVals.length){
       destroyChart('ch-ct-hist');
       const ctx=document.getElementById('ch-ct-hist');
-      if(ctx) charts['ch-ct-hist']=new Chart(ctx,{
-        type:'bar',data:{labels:hKeys.map(b=>`${b}–${b+bSz}d`),datasets:[{data:hKeys.map(b=>hist[b]),backgroundColor:'#386A59',borderRadius:4}]},
-        options:{...BASE_OPTS,plugins:{...BASE_OPTS.plugins,datalabels:{display:true,anchor:'end',align:'top',color:'#1F2A26',font:{family:'Montserrat',size:9,weight:'600'},formatter:v=>v||''}}}
-      });
+      if(ctx) charts['ch-ct-hist']=new Chart(ctx,{type:'bar',data:{labels:hKeys.map(b=>`${b}–${b+bSz}d`),datasets:[{data:hKeys.map(b=>hist[b]),backgroundColor:'#386A59',borderRadius:4}]},options:{...BASE_OPTS,plugins:{...BASE_OPTS.plugins,datalabels:{display:true,anchor:'end',align:'top',color:'#1F2A26',font:{family:'Montserrat',size:9,weight:'600'},formatter:v=>v||''}}}});
     }
-    if(byDept.length)   barChart('ch-ct-dept',   byDept.map(r=>r.dept),  byDept.map(r=>r.avg),  '#386A59', {horizontal:true,lblFmt:v=>v+'d'});
-    if(byMethod.length) barChart('ch-ct-method',  byMethod.map(r=>r.method), byMethod.map(r=>r.avg), byMethod.map((_,i)=>PALETTE[i%PALETTE.length]), {lblFmt:v=>v+'d'});
+    if(byDept.length) barChart('ch-ct-dept',byDept.map(r=>r.dept),byDept.map(r=>r.avg),'#386A59',{horizontal:true,lblFmt:v=>v+'d'});
+    if(byMethod.length) barChart('ch-ct-method',byMethod.map(r=>r.method),byMethod.map(r=>r.avg),byMethod.map((_,i)=>PALETTE[i%PALETTE.length]),{lblFmt:v=>v+'d'});
+    if(deptLeadStats.length) barChart('ch-lead-dept',deptLeadStats.map(r=>r.dept),deptLeadStats.map(r=>Math.round(r.avg*10)/10),'#386A59',{horizontal:true,lblFmt:v=>v+'d',tipFmt:v=>v+' days'});
+    if(procLeadStats.length) barChart('ch-lead-proc',procLeadStats.map(r=>r.method),procLeadStats.map(r=>Math.round(r.avg*10)/10),'#C2984D',{horizontal:true,lblFmt:v=>v+'d',tipFmt:v=>v+' days'});
+    if(topSupplierLead.length) barChart('ch-lead-supplier',topSupplierLead.map(r=>r.supplier),topSupplierLead.map(r=>Math.round(r.avg*10)/10),'#719A58',{horizontal:true,lblFmt:v=>v+'d',tipFmt:v=>v+' days'});
   },50);
 }
 
