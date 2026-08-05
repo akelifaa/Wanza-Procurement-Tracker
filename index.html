@@ -196,9 +196,136 @@ tr:hover td{background:#F8FBF8}
   .pipeline{flex-wrap:wrap}
   .pipe-stage{min-width:calc(50% - 4px)}
 }
+
+/* LOGIN PAGE */
+.login-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: linear-gradient(135deg, #1F2A26 0%, #386A59 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.login-box {
+  width: 380px;
+  max-width: calc(100% - 40px);
+  background: #fff;
+  border-radius: 12px;
+  padding: 35px;
+  box-shadow: 0 20px 60px rgba(0,0,0,.35);
+}
+
+.login-logo {
+  display: block;
+  max-width: 150px;
+  max-height: 80px;
+  object-fit: contain;
+  margin: 0 auto 20px;
+}
+
+.login-title {
+  text-align: center;
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--dk);
+  margin-bottom: 5px;
+}
+
+.login-subtitle {
+  text-align: center;
+  color: var(--mt);
+  font-size: 11px;
+  margin-bottom: 25px;
+}
+
+.login-field {
+  margin-bottom: 15px;
+}
+
+.login-field label {
+  display: block;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--mt);
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: .6px;
+}
+
+.login-field input {
+  width: 100%;
+  padding: 11px 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 12px;
+}
+
+.login-field input:focus {
+  outline: none;
+  border-color: var(--mg);
+}
+
+.login-button {
+  width: 100%;
+  padding: 11px;
+  margin-top: 5px;
+  background: var(--mg);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.login-button:hover {
+  opacity: .9;
+}
+
+.login-error {
+  display: none;
+  margin-top: 12px;
+  padding: 8px;
+  background: #FDDEDE;
+  color: #922B2B;
+  border-radius: 5px;
+  text-align: center;
+  font-size: 11px;
+}
 </style>
 </head>
 <body>
+
+<div class="login-overlay" id="login-screen">
+  <div class="login-box">
+
+    <img src="Logo.png" alt="Wanza Furniture PLC" class="login-logo">
+
+    <div class="login-title">Wanza Furniture PLC</div>
+    <div class="login-subtitle">Procurement Command Dashboard</div>
+
+    <div class="login-field">
+      <label>Username</label>
+      <input type="text" id="login-user" placeholder="Enter username">
+    </div>
+
+    <div class="login-field">
+      <label>Password</label>
+      <input type="password" id="login-password" placeholder="Enter password">
+    </div>
+
+    <button class="login-button" onclick="login()">Login</button>
+
+    <div class="login-error" id="login-error">
+      Incorrect username or password.
+    </div>
+
+  </div>
+</div>
+
 <div class="shell">
 
 <!-- SIDEBAR -->
@@ -1408,6 +1535,32 @@ function renderAudit() {
 // ── BOOT ──────────────────────────────────────────────────────────────────────
 loadData();
 document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeModal(); });
+
+// ── LOGIN ─────────────────────────────────────────────────────────────────────
+
+function login() {
+  const username = document.getElementById('login-user').value.trim();
+  const password = document.getElementById('login-password').value;
+
+  if (username === 'WANZA' && password === 'WANZA_admin@2026') {
+    sessionStorage.setItem('wanzaLoggedIn', 'true');
+    document.getElementById('login-screen').style.display = 'none';
+  } else {
+    document.getElementById('login-error').style.display = 'block';
+  }
+}
+
+// Keep user logged in while browser tab/session remains open
+if (sessionStorage.getItem('wanzaLoggedIn') === 'true') {
+  document.getElementById('login-screen').style.display = 'none';
+}
+
+// Allow Enter key to login
+document.getElementById('login-password').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') {
+    login();
+  }
+});
 </script>
 </body>
 </html>
