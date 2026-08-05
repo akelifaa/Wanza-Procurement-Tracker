@@ -1167,7 +1167,7 @@ function renderOps() {
   const methodTotal = methodStats.reduce((s,r)=>s+r.value,0);
 
   document.getElementById('tab-ops').innerHTML = `
-    <div class="sec">Priority Analysis <span class="sec-count">${d.length} items</span></div>
+    <div class="sec">NEW · Priority Analysis <span class="sec-count">${d.length} items</span></div>
     <div class="chart-grid">
       <div class="chart-card"><div class="chart-title">Number of Tasks by Priority</div><div class="chart-wrap" style="height:220px"><canvas id="ch-priority-count"></canvas></div></div>
       <div class="chart-card"><div class="chart-title">Total Urgent Orders by Department</div><div class="chart-wrap" style="height:${Math.max(220,urgentDept.length*36)}px"><canvas id="ch-urgent-dept"></canvas></div></div>
@@ -1177,7 +1177,7 @@ function renderOps() {
       <div class="tbl-wrap"><div class="tbl-head">Urgent Orders by Department <small style="font-weight:400;color:var(--mt)">${urgentAll.length} total urgent</small></div>${buildTable(['Department','Urgent Orders'],urgentDept.map(r=>[esc(r.dept),`<strong>${r.count}</strong>`]),'No urgent orders in the current filter scope.')}</div>
     </div>
 
-    <div class="sec">Procurement Method Analysis <span class="sec-count">${methodStats.length} methods</span></div>
+    <div class="sec">NEW · Procurement Method Analysis <span class="sec-count">${methodStats.length} methods</span></div>
     <div class="chart-grid">
       <div class="chart-card"><div class="chart-title">Number of Items by Procurement Method</div><div class="chart-wrap" style="height:240px"><canvas id="ch-method-count"></canvas></div></div>
       <div class="chart-card"><div class="chart-title">Procurement Value by Method <small>VAT inclusive</small></div><div class="chart-wrap" style="height:240px"><canvas id="ch-method-value"></canvas></div></div>
@@ -1239,17 +1239,38 @@ function renderPeople() {
   const taskStats=officers.map(officer=>{
     const c=d.filter(r=>r.coll_off===officer && r.coll_var!==null);
     const e=d.filter(r=>r.eval_off===officer && r.eval_var!==null);
-    const standards=[...c.map(r=>r.std_coll),...e.map(r=>r.std_eval)].filter(v=>v!==null&&!isNaN(v));
+
+    // Standards in the source are standard DATES, not numeric durations.
+    // Convert them to standard task durations before averaging.
+    const collStdDays=c.map(r=>daysBetween(r.pr_date,r.std_coll)).filter(v=>v!==null);
+    const evalStdDays=e.map(r=>daysBetween(r.std_coll,r.std_eval)).filter(v=>v!==null);
+    const standards=[...collStdDays,...evalStdDays];
+
     return {
       officer,
-      coll_count:c.length, coll_avg:avgBy(c,'coll_var'),
-      eval_count:e.length, eval_avg:avgBy(e,'eval_var'),
-      // The current source has Payment Variance but no Payment Officer field,
-      // so payment cannot be assigned to an officer without inventing a relationship.
-      pay_count:null, pay_avg:null,
+      coll_count:c.length,
+      coll_avg:avgBy(c,'coll_var'),
+      eval_count:e.length,
+      eval_avg:avgBy(e,'eval_var'),
+      pay_count:null,
+      pay_avg:null,
       avg_standard:avgValues(standards)
     };
   });
+
+  // Payment Variance exists in the source, but there is no Payment Officer column.
+  // Keep those records visible without falsely assigning them to an officer.
+  const paymentRows=d.filter(r=>r.pay_var!==null);
+  if(paymentRows.length){
+    taskStats.push({
+      officer:'Unassigned — Payment Officer not in source',
+      coll_count:null, coll_avg:null,
+      eval_count:null, eval_avg:null,
+      pay_count:paymentRows.length,
+      pay_avg:avgBy(paymentRows,'pay_var'),
+      avg_standard:null
+    });
+  }
 
   const ch = Math.max(180, collStats.length*44);
   const eh = Math.max(180, evalStats.length*44);
@@ -1274,7 +1295,7 @@ function renderPeople() {
       evalStats.map(r=>[esc(r.officer),r.count,varLabel(r.avg_ev!==null?Math.round(r.avg_ev*10)/10:null),varLabel(r.avg_dl!==null?Math.round(r.avg_dl*10)/10:null)])
     )}</div>
 
-    <div class="sec">Officer Performance by Task <span class="sec-count">${taskStats.length} officers</span></div>
+    <div class="sec">NEW · Officer Performance by Task <span class="sec-count">${taskStats.length} officers</span></div>
     <div class="tbl-wrap">
       <div class="tbl-head">Task Performance <small style="font-weight:400;color:var(--mt)">+ ahead of standard · − delayed</small></div>
       ${buildTable(
@@ -1283,10 +1304,10 @@ function renderPeople() {
           `<strong>${esc(r.officer)}</strong>`,
           r.coll_count||'—',varLabel(r.coll_avg!==null?Math.round(r.coll_avg*10)/10:null),
           r.eval_count||'—',varLabel(r.eval_avg!==null?Math.round(r.eval_avg*10)/10:null),
-          '—','—',dayLabel(r.avg_standard)
+          r.pay_count||'—',varLabel(r.pay_avg!==null?Math.round(r.pay_avg*10)/10:null),dayLabel(r.avg_standard)
         ])
       )}
-      <div style="padding:9px 12px;font-size:10px;color:var(--mt);border-top:1px solid var(--border)">Payment columns are intentionally blank because the current source contains Payment Variance but no Payment Officer field to identify which officer performed the payment task.</div>
+      <div style="padding:9px 12px;font-size:10px;color:var(--mt);border-top:1px solid var(--border)">Payment Variance is shown under an Unassigned row because the source has no Payment Officer column. This avoids assigning payment performance to the wrong officer.</div>
     </div>`;
 
   setTimeout(()=>{
@@ -1441,7 +1462,7 @@ function renderCycle() {
     <div class="sec">Longest Cycle Time Items (Top 10)</div>
     <div class="tbl-wrap">${buildTable(['ID','Item','Dept','Method','Cycle Time (d)','Lead Time (d)','Stage','Status'],[...withCT].sort((a,b)=>b.cycle_time-a.cycle_time).slice(0,10).map(r=>[esc(r.row_id),esc(r.item),esc(r.dept),esc(r.method),`<strong>${Math.round(r.cycle_time)}</strong>`,r.lead_time?Math.round(r.lead_time):'—',esc(r.stage),badge(r.sett_status,r.is_settled?'settled':'pending')]))}</div>
 
-    <div class="sec">Lead Time Analysis <span class="sec-count">Department · Procurement · Supplier</span></div>
+    <div class="sec">NEW · Lead Time Analysis <span class="sec-count">Department · Procurement · Supplier</span></div>
     <div class="kpi-row">
       <div class="kpi-card"><div class="kpi-label">Department Lead Time</div><div class="kpi-value">${dayLabel(avgDeptLead)}</div><div class="kpi-sub">PR Date → PR Received</div></div>
       <div class="kpi-card amber"><div class="kpi-label">Procurement Lead Time</div><div class="kpi-value">${dayLabel(avgProcLead)}</div><div class="kpi-sub">PR Received → CPV Date</div></div>
